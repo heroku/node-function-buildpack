@@ -30,7 +30,7 @@ import (
 	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/nodejs-cnb/node"
-	"github.com/projectriff/node-function-buildpack/metadata"
+	"github.com/projectriff/riff-buildpack/metadata"
 )
 
 const (

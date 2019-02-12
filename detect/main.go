@@ -22,8 +22,8 @@ import (
 
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/npm-cnb/modules"
-	"github.com/projectriff/node-function-buildpack/metadata"
 	"github.com/projectriff/node-function-buildpack/node"
+	"github.com/projectriff/riff-buildpack/metadata"
 )
 
 const (

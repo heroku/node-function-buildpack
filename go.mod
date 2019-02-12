@@ -7,5 +7,6 @@ require (
 	github.com/cloudfoundry/nodejs-cnb v0.0.2
 	github.com/cloudfoundry/npm-cnb v0.0.3
 	github.com/onsi/gomega v1.4.3
+	github.com/projectriff/riff-buildpack v0.1.1-0.20190207162816-5a5a4a635c5e
 	github.com/sclevine/spec v1.2.0
 )
