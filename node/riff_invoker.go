@@ -34,6 +34,9 @@ import (
 )
 
 const (
+	// Name is a short, human friendly name for the node invoker
+	Name = "node"
+
 	// Dependency is a key identifying the node invoker dependency in the build plan.
 	Dependency = "riff-invoker-node"
 

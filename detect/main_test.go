@@ -51,7 +51,6 @@ func TestDetect(t *testing.T) {
 			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "riff.toml"), `artifact = "my.js"`)
 
 			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-
 			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
 				nodeCNB.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{"launch": true, "build": true},
@@ -67,7 +66,6 @@ func TestDetect(t *testing.T) {
 			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "riff.toml"), `artifact = "my.js"`)
 
 			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-
 			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
 				nodeCNB.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{"launch": true, "build": true},
@@ -78,18 +76,7 @@ func TestDetect(t *testing.T) {
 			}))
 		})
 
-		it.Pend("fails if ambiguity", func() {
-			f.AddBuildPlan("jvm-application", buildplan.Dependency{})
-			f.AddBuildPlan(modules.Dependency, buildplan.Dependency{})
-			test.WriteFileWithPerm(t, filepath.Join(f.Detect.Application.Root, "fn.sh"), 0755 /*<-executable*/, "some bash")
-			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "riff.toml"), `artifact = "fn.sh"`)
-
-			code, err := d(f.Detect)
-			g.Expect(code).To(Equal(Error_DetectAmbiguity))
-			g.Expect(err).To(HaveOccurred())
-		})
-
-		it("override resolves ambiguity", func() {
+		it("passes and opts in for the node-invoker if the override matches", func() {
 			f.AddBuildPlan("jvm-application", buildplan.Dependency{})
 			f.AddBuildPlan(modules.Dependency, buildplan.Dependency{})
 			test.WriteFileWithPerm(t, filepath.Join(f.Detect.Application.Root, "fn.sh"), 0755 /*<-executable*/, "some bash")
@@ -97,7 +84,6 @@ func TestDetect(t *testing.T) {
 override = "node"`)
 
 			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-
 			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
 				nodeCNB.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{"launch": true, "build": true},
@@ -108,12 +94,14 @@ override = "node"`)
 			}))
 		})
 
-		it("errors with metadata but no application-type", func() {
-			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "riff.toml"), `handler = "test-handler"`)
+		it.Focus("fails if override is missmatched", func() {
+			f.AddBuildPlan("jvm-application", buildplan.Dependency{})
+			f.AddBuildPlan(modules.Dependency, buildplan.Dependency{})
+			test.WriteFileWithPerm(t, filepath.Join(f.Detect.Application.Root, "fn.sh"), 0755 /*<-executable*/, "some bash")
+			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "riff.toml"), `artifact = "fn.js"
+override = "java"`)
 
-			code, err := d(f.Detect)
-			g.Expect(code).To(Equal(Error_DetectedNone))
-			g.Expect(err).To(HaveOccurred())
+			g.Expect(d(f.Detect)).To(Equal(detect.FailStatusCode))
 		})
 	}, spec.Report(report.Terminal{}))
 }

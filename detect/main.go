@@ -65,37 +65,35 @@ func d(detect detect.Detect) (int, error) {
 		return detect.Fail(), nil
 	}
 
-	detected := []string{}
+	detected := false
 
-	if metadata.Override == "" {
+	if metadata.Override != "" {
+		if metadata.Override == node.Name {
+			detected = true
+			detect.Logger.Debug("Override language: %q.", node.Name)
+		}
+	} else {
 		// Try npm
 		if _, ok := detect.BuildPlan[modules.Dependency]; ok {
-			detected = append(detected, "node")
+			detected = true
 		} else {
 			// Try node
 			if ok, err := node.DetectNode(detect, metadata); err != nil {
 				detect.Logger.Info("Error trying to use node invoker: %s", err.Error())
 				return detect.Error(Error_DetectInternalError), nil
 			} else if ok {
-				detected = append(detected, "node")
+				detected = true
 			}
 		}
 
-		if len(detected) == 0 {
-			return detect.Error(Error_DetectedNone), fmt.Errorf("detected riff function but unable to determine function type")
-		} else if len(detected) > 1 {
-			return detect.Error(Error_DetectAmbiguity), fmt.Errorf("detected riff function but ambiguous language detected: %v", detected)
+		if detected {
+			detect.Logger.Debug("Detected language: %q.", node.Name)
 		}
-
-		detect.Logger.Debug("Detected language: %q.", detected[0])
-	} else {
-		detected = []string{metadata.Override}
 	}
 
-	switch detected[0] {
-	case "node":
+	if detected {
 		return detect.Pass(node.BuildPlanContribution(detect, metadata))
-	default:
-		return detect.Error(Error_UnsupportedLanguage), fmt.Errorf("unsupported language: %v", detected[0])
 	}
+
+	return detect.Fail(), nil
 }
