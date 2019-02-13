@@ -17,41 +17,12 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/projectriff/node-function-buildpack/invoker"
 	"github.com/projectriff/node-function-buildpack/node"
 )
 
 func main() {
-	build, err := build.DefaultBuild()
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Build: %s\n", err)
-		os.Exit(101)
-	}
-
-	if code, err := b(build); err != nil {
-		build.Logger.Info(err.Error())
-		os.Exit(code)
-	} else {
-		os.Exit(code)
-	}
-}
-
-func b(build build.Build) (int, error) {
-	build.Logger.FirstLine(build.Logger.PrettyIdentity(build.Buildpack))
-
-	if invoker, ok, err := node.NewNodeInvoker(build); err != nil {
-		return build.Failure(105), err
-	} else if ok {
-		if err = invoker.Contribute(); err != nil {
-			return build.Failure(106), err
-		}
-		return build.Success(buildplan.BuildPlan{})
-	}
-
-	build.Logger.Info("Buildpack passed detection but did not know how to actually build. Should never happen.")
-	return build.Failure(104), nil
+	buildpack := node.NewBuildpack()
+	commands := invoker.NewBuildpackCommands(buildpack)
+	commands.Build()
 }
