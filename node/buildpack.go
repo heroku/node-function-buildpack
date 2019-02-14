@@ -22,7 +22,7 @@ import (
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/npm-cnb/modules"
-	"github.com/projectriff/node-function-buildpack/invoker"
+	"github.com/projectriff/riff-buildpack/invoker"
 	"github.com/projectriff/riff-buildpack/metadata"
 )
 

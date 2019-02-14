@@ -17,8 +17,8 @@
 package main
 
 import (
-	"github.com/projectriff/node-function-buildpack/invoker"
 	"github.com/projectriff/node-function-buildpack/node"
+	"github.com/projectriff/riff-buildpack/invoker"
 )
 
 func main() {
