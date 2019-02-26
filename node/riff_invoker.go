@@ -30,7 +30,7 @@ import (
 	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/nodejs-cnb/node"
-	"github.com/projectriff/riff-buildpack/metadata"
+	"github.com/projectriff/riff-buildpack/function"
 )
 
 const (
@@ -63,19 +63,19 @@ type RiffNodeInvoker struct {
 	functionLayer layers.Layer
 }
 
-func BuildPlanContribution(detect detect.Detect, metadata metadata.Metadata) buildplan.BuildPlan {
-	n := detect.BuildPlan[node.Dependency]
+func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.BuildPlan {
+	n := d.BuildPlan[node.Dependency]
 	if n.Metadata == nil {
 		n.Metadata = buildplan.Metadata{}
 	}
 	n.Metadata["launch"] = true
 	n.Metadata["build"] = true
 
-	r := detect.BuildPlan[Dependency]
+	r := d.BuildPlan[Dependency]
 	if r.Metadata == nil {
 		r.Metadata = buildplan.Metadata{}
 	}
-	r.Metadata[FunctionArtifact] = metadata.Artifact
+	r.Metadata[FunctionArtifact] = m.Artifact
 
 	return buildplan.BuildPlan{node.Dependency: n, Dependency: r}
 }

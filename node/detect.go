@@ -20,18 +20,18 @@ package node
 import (
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
-	"github.com/projectriff/riff-buildpack/metadata"
+	"github.com/projectriff/riff-buildpack/function"
 
 	"path/filepath"
 )
 
 // DetectNode answers true if the `artifact` path is set, the file exists and ends in ".js"
-func DetectNode(detect detect.Detect, metadata metadata.Metadata) (bool, error) {
-	if metadata.Artifact == "" {
+func DetectNode(d detect.Detect, m function.Metadata) (bool, error) {
+	if m.Artifact == "" {
 		return false, nil
 	}
 
-	path := filepath.Join(detect.Application.Root, metadata.Artifact)
+	path := filepath.Join(d.Application.Root, m.Artifact)
 
 	ok, err := helper.FileExists(path)
 	if err != nil || !ok {

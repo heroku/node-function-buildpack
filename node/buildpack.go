@@ -18,40 +18,54 @@
 package node
 
 import (
+	"fmt"
+
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/npm-cnb/modules"
-	"github.com/projectriff/riff-buildpack/invoker"
-	"github.com/projectriff/riff-buildpack/metadata"
+	"github.com/projectriff/riff-buildpack/function"
 )
 
 type NodeBuildpack struct {
 	name string
 }
 
-func (b *NodeBuildpack) Name() string {
-	return b.name
+func (bp *NodeBuildpack) Name() string {
+	return bp.name
 }
 
-func (b *NodeBuildpack) Detect(detect detect.Detect, metadata metadata.Metadata) (bool, error) {
+func (bp *NodeBuildpack) Detect(d detect.Detect, m function.Metadata) (*buildplan.BuildPlan, error) {
+	if detected, err := bp.detect(d, m); err != nil {
+		return nil, err
+	} else if detected {
+		plan := BuildPlanContribution(d, m)
+		return &plan, nil
+	}
+	// didn't detect
+	return nil, nil
+}
+
+func (*NodeBuildpack) detect(d detect.Detect, m function.Metadata) (bool, error) {
 	// Try npm
-	if _, ok := detect.BuildPlan[modules.Dependency]; ok {
+	if _, ok := d.BuildPlan[modules.Dependency]; ok {
 		return true, nil
 	}
 	// Try node
-	return DetectNode(detect, metadata)
+	return DetectNode(d, m)
 }
 
-func (b *NodeBuildpack) BuildPlan(detect detect.Detect, metadata metadata.Metadata) buildplan.BuildPlan {
-	return BuildPlanContribution(detect, metadata)
+func (*NodeBuildpack) Build(b build.Build) error {
+	invoker, ok, err := NewNodeInvoker(b)
+	if err != nil {
+		return err
+	} else if !ok {
+		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
+	}
+	return invoker.Contribute()
 }
 
-func (b *NodeBuildpack) Invoker(build build.Build) (invoker.Invoker, bool, error) {
-	return NewNodeInvoker(build)
-}
-
-func NewBuildpack() invoker.Buildpack {
+func NewBuildpack() function.Buildpack {
 	return &NodeBuildpack{
 		name: "node",
 	}

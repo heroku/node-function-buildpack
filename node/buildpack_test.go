@@ -26,8 +26,7 @@ import (
 	"github.com/cloudfoundry/npm-cnb/modules"
 	. "github.com/onsi/gomega"
 	"github.com/projectriff/node-function-buildpack/node"
-	"github.com/projectriff/riff-buildpack/invoker"
-	"github.com/projectriff/riff-buildpack/metadata"
+	"github.com/projectriff/riff-buildpack/function"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -51,63 +50,29 @@ func TestDetect(t *testing.T) {
 		g := NewGomegaWithT(t)
 
 		var f *test.DetectFactory
-		var m metadata.Metadata
-		var b invoker.Buildpack
+		var m function.Metadata
+		var b function.Buildpack
 
 		it.Before(func() {
 			f = test.NewDetectFactory(t)
-			m = metadata.Metadata{}
+			m = function.Metadata{}
 			b = node.NewBuildpack()
 		})
 
 		it("fails by default", func() {
-			detected, err := b.Detect(f.Detect, m)
+			plan, err := b.Detect(f.Detect, m)
 
-			g.Expect(detected).To(BeFalse())
 			g.Expect(err).To(BeNil())
+			g.Expect(plan).To(BeNil())
 		})
 
 		it("passes if the NPM app BP applied", func() {
 			f.AddBuildPlan(modules.Dependency, buildplan.Dependency{})
 
-			detected, err := b.Detect(f.Detect, m)
+			plan, err := b.Detect(f.Detect, m)
 
-			g.Expect(detected).To(BeTrue())
 			g.Expect(err).To(BeNil())
-		})
-
-		it("passes if the NPM app BP did not apply, but artifact is .js", func() {
-			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "my.js"), "module.exports = x => x**2")
-			m.Artifact = "my.js"
-
-			detected, err := b.Detect(f.Detect, m)
-
-			g.Expect(detected).To(BeTrue())
-			g.Expect(err).To(BeNil())
-		})
-	}, spec.Report(report.Terminal{}))
-}
-
-func TestBuildPlan(t *testing.T) {
-	spec.Run(t, "BuildPlan", func(t *testing.T, _ spec.G, it spec.S) {
-		g := NewGomegaWithT(t)
-
-		var f *test.DetectFactory
-		var m metadata.Metadata
-		var b invoker.Buildpack
-
-		it.Before(func() {
-			f = test.NewDetectFactory(t)
-			m = metadata.Metadata{}
-			b = node.NewBuildpack()
-		})
-
-		it("creates a buildplan for a package.json detection", func() {
-			f.AddBuildPlan(modules.Dependency, buildplan.Dependency{})
-
-			plan := b.BuildPlan(f.Detect, m)
-
-			g.Expect(plan).To(Equal(buildplan.BuildPlan{
+			g.Expect(plan).To(Equal(&buildplan.BuildPlan{
 				nodeCNB.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{"launch": true, "build": true},
 				},
@@ -117,13 +82,14 @@ func TestBuildPlan(t *testing.T) {
 			}))
 		})
 
-		it("creates a buildplan for .js artifact", func() {
+		it("passes if the NPM app BP did not apply, but artifact is .js", func() {
 			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "my.js"), "module.exports = x => x**2")
 			m.Artifact = "my.js"
 
-			plan := b.BuildPlan(f.Detect, m)
+			plan, err := b.Detect(f.Detect, m)
 
-			g.Expect(plan).To(Equal(buildplan.BuildPlan{
+			g.Expect(err).To(BeNil())
+			g.Expect(plan).To(Equal(&buildplan.BuildPlan{
 				nodeCNB.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{"launch": true, "build": true},
 				},
@@ -135,12 +101,12 @@ func TestBuildPlan(t *testing.T) {
 	}, spec.Report(report.Terminal{}))
 }
 
-func TestInvoker(t *testing.T) {
-	spec.Run(t, "Invoker", func(t *testing.T, _ spec.G, it spec.S) {
+func TestBuild(t *testing.T) {
+	spec.Run(t, "Build", func(t *testing.T, _ spec.G, it spec.S) {
 		g := NewGomegaWithT(t)
 
 		var f *test.BuildFactory
-		var b invoker.Buildpack
+		var b function.Buildpack
 
 		it.Before(func() {
 			f = test.NewBuildFactory(t)
@@ -148,22 +114,18 @@ func TestInvoker(t *testing.T) {
 		})
 
 		it("won't build unless passed detection", func() {
-			_, ok, err := b.Invoker(f.Build)
+			err := b.Build(f.Build)
 
-			g.Expect(ok).To(BeFalse())
-			g.Expect(err).To(BeNil())
+			g.Expect(err).To(MatchError("buildpack passed detection but did not know how to actually build"))
 		})
 
 		it.Pend("will build if passed detection", func() {
-			// TODO configure state from the buildplan
 			f.AddBuildPlan(node.Dependency, buildplan.Dependency{})
-			i, ok, err := b.Invoker(f.Build)
+			f.AddDependency(node.Dependency, ".")
 
-			g.Expect(ok).To(BeTrue())
+			err := b.Build(f.Build)
+
 			g.Expect(err).To(BeNil())
-			g.Expect(i).To(Equal(node.RiffNodeInvoker{
-				// TODO set actual values
-			}))
 		})
 	}, spec.Report(report.Terminal{}))
 }
