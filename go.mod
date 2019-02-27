@@ -10,4 +10,4 @@ require (
 	github.com/sclevine/spec v1.2.0
 )
 
-replace github.com/projectriff/riff-buildpack => github.com/scothis/riff-buildpack v0.1.1-0.20190226211521-e6055735323e
+replace github.com/projectriff/riff-buildpack => github.com/scothis/riff-buildpack v0.1.1-0.20190227184726-f659cd04d816

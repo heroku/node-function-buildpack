@@ -32,14 +32,14 @@ import (
 )
 
 func TestName(t *testing.T) {
-	spec.Run(t, "Name", func(t *testing.T, _ spec.G, it spec.S) {
+	spec.Run(t, "Id", func(t *testing.T, _ spec.G, it spec.S) {
 
 		g := NewGomegaWithT(t)
 
-		it("has the right name", func() {
+		it("has the right id", func() {
 			b := node.NewBuildpack()
 
-			g.Expect(b.Name()).To(Equal("node"))
+			g.Expect(b.Id()).To(Equal("node"))
 		})
 	}, spec.Report(report.Terminal{}))
 }
