@@ -20,7 +20,7 @@ package node
 import (
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
-	"github.com/projectriff/riff-buildpack/function"
+	"github.com/projectriff/libfnbuildpack/function"
 
 	"path/filepath"
 )
