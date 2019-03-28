@@ -7,7 +7,7 @@ support (and know how to build / run) languages supported by riff.
 
 ## In Plain English
 
-In a nutshell, when combined with the other buildpacks present in the [riff builder](https://github.com/projectriff/riff-buildpack-group) what this means (and especially when dealing with the riff CLI which takes care of the creation of the `riff.toml` file for you):
+In a nutshell, when combined with the other buildpacks present in the [riff builder](https://github.com/projectriff/builder) what this means (and especially when dealing with the riff CLI which takes care of the creation of the `riff.toml` file for you):
 
 - The presence of a `package.json` file and/or the fact that the `--artifact` flag points to a `.js` file will result in
   1. the `npm installation` of the function if applicable
@@ -52,7 +52,7 @@ make
 
 This will package (with pre-downloaded cache layers) the buildpack in the
 `artifactory/io/projectriff/node/io.projectriff.node/latest` directory. That can be used as a `uri` in a `builder.toml`
-file of a builder (see https://github.com/projectriff/riff-buildpack-group)
+file of a builder (see https://github.com/projectriff/builder)
 
 ## License
 
