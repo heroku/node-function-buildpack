@@ -17,3 +17,4 @@ bin/
 dependency-cache/
 .DS_Store
 artifactory/
+.vscode/
