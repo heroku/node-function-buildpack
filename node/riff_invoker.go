@@ -92,6 +92,7 @@ func (r RiffNodeInvoker) Contribute() error {
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr
 		cmd.Dir = layer.Root
+		cmd.Env = os.Environ()
 		if e := cmd.Run(); e != nil {
 			return e
 		}
@@ -135,7 +136,8 @@ func NewNodeInvoker(build build.Build) (RiffNodeInvoker, bool, error) {
 		return RiffNodeInvoker{}, false, err
 	}
 
-	dep, err := deps.Best(Dependency, bp.Version, build.Stack)
+	//dep, err := deps.Best(Dependency, bp.Version, build.Stack)
+	dep, err := deps.Best(Dependency, bp.Version, "io.buildpacks.stacks.bionic")
 	if err != nil {
 		return RiffNodeInvoker{}, false, err
 	}
