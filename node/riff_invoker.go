@@ -92,7 +92,6 @@ func (r RiffNodeInvoker) Contribute() error {
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr
 		cmd.Dir = layer.Root
-		cmd.Env = os.Environ()
 		if e := cmd.Run(); e != nil {
 			return e
 		}
