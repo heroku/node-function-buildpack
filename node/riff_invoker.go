@@ -135,8 +135,7 @@ func NewNodeInvoker(build build.Build) (RiffNodeInvoker, bool, error) {
 		return RiffNodeInvoker{}, false, err
 	}
 
-	//dep, err := deps.Best(Dependency, bp.Version, build.Stack)
-	dep, err := deps.Best(Dependency, bp.Version, "io.buildpacks.stacks.bionic")
+	dep, err := deps.Best(Dependency, bp.Version, build.Stack)
 	if err != nil {
 		return RiffNodeInvoker{}, false, err
 	}
