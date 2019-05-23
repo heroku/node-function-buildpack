@@ -62,8 +62,8 @@ func TestDetect(t *testing.T) {
 		it("fails by default", func() {
 			plan, err := b.Detect(f.Detect, m)
 
-			g.Expect(err).To(BeNil())
 			g.Expect(plan).To(BeNil())
+			g.Expect(err).ToNot(BeNil())
 		})
 
 		it("passes if the NPM app BP applied", func() {

@@ -18,24 +18,36 @@
 package node
 
 import (
+	"errors"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/libcfbuildpack/helper"
-	"github.com/projectriff/libfnbuildpack/function"
+	"io/ioutil"
+	"log"
 
 	"path/filepath"
 )
 
-// DetectNode answers true if the `artifact` path is set, the file exists and ends in ".js"
-func DetectNode(d detect.Detect, m function.Metadata) (bool, error) {
-	if m.Artifact == "" {
-		return false, nil
+// DetectNode answers true if there is only one .js file in the root path
+func DetectNode(d detect.Detect) (bool, error) {
+	path := filepath.Join(d.Application.Root)
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	path := filepath.Join(d.Application.Root, m.Artifact)
-
-	ok, err := helper.FileExists(path)
-	if err != nil || !ok {
-		return false, err
+	numberOfJsFiles := 0
+	for _, file := range files {
+		if file.Mode().IsRegular() {
+			if filepath.Ext(file.Name()) == ".js" {
+				numberOfJsFiles++
+				if numberOfJsFiles > 1 {
+					return false, errors.New("found more than one .js file")
+				}
+			}
+		}
 	}
-	return filepath.Ext(path) == ".js", nil
+	if numberOfJsFiles == 0 {
+		return false, errors.New("missing .js file")
+	}
+
+	return true, nil
 }
