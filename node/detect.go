@@ -30,31 +30,16 @@ import (
 )
 
 func DetectNode(d detect.Detect) (bool, error) {
-	files, err := ioutil.ReadDir(d.Application.Root)
+	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*.js"))
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	var jsFunctionFileName string
-	var jsFileCount int
-
-	for _, file := range files {
-		if file.Mode().IsRegular() {
-			if filepath.Ext(file.Name()) == ".js" {
-				jsFunctionFileName = file.Name()
-				jsFileCount++
-				if jsFileCount > 1 {
-					return false, errors.New("found more than one .js file")
-				}
-			}
-		}
+	if len(jsFiles) != 1 {
+		return false, errors.New("could not find or found more than one .js file")
 	}
 
-	if jsFileCount == 0 {
-		return false, errors.New("missing .js file")
-	}
-
-	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFunctionFileName)
+	_, jsFile := filepath.Split(jsFiles[0])
+	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFile)
 	if err != nil {
 		return false, err
 	}
