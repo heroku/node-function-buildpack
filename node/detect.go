@@ -30,8 +30,7 @@ import (
 )
 
 func DetectNode(d detect.Detect) (bool, error) {
-	path := filepath.Join(d.Application.Root)
-	files, err := ioutil.ReadDir(path)
+	files, err := ioutil.ReadDir(d.Application.Root)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,7 +54,7 @@ func DetectNode(d detect.Detect) (bool, error) {
 		return false, errors.New("missing .js file")
 	}
 
-	err = validatePackageJson(filepath.Join(path, "package.json"), jsFunctionFileName)
+	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFunctionFileName)
 	if err != nil {
 		return false, err
 	}
