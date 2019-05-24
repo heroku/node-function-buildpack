@@ -18,3 +18,4 @@ artifactory/io/projectriff/node/io.projectriff.node: buildpack.toml $(GO_SOURCES
 clean:
 	rm -fR artifactory/
 	rm -fR dependency-cache/
+	rm -fR bin/
