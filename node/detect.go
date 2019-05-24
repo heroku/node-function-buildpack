@@ -18,24 +18,64 @@
 package node
 
 import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"log"
+	"os"
+
 	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/libcfbuildpack/helper"
-	"github.com/projectriff/libfnbuildpack/function"
 
 	"path/filepath"
 )
 
-// DetectNode answers true if the `artifact` path is set, the file exists and ends in ".js"
-func DetectNode(d detect.Detect, m function.Metadata) (bool, error) {
-	if m.Artifact == "" {
-		return false, nil
+func DetectNode(d detect.Detect) (bool, error) {
+	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*.js"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(jsFiles) != 1 {
+		return false, errors.New("could not find or found more than one .js file")
 	}
 
-	path := filepath.Join(d.Application.Root, m.Artifact)
-
-	ok, err := helper.FileExists(path)
-	if err != nil || !ok {
+	_, jsFile := filepath.Split(jsFiles[0])
+	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFile)
+	if err != nil {
 		return false, err
 	}
-	return filepath.Ext(path) == ".js", nil
+
+	return true, nil
+}
+
+func validatePackageJson(packageJsonFile, mainJsFunctionFile string) error {
+	if !fileExists(packageJsonFile) {
+		return errors.New("missing package.json file")
+	}
+
+	var data []byte
+	data, err := ioutil.ReadFile(packageJsonFile)
+	if err != nil {
+		return err
+	}
+
+	packageJson := struct {
+		Main string `json:"main"`
+	}{}
+	if err := json.Unmarshal(data, &packageJson); err != nil {
+		return err
+	}
+
+	if packageJson.Main == "" || packageJson.Main != mainJsFunctionFile {
+		return errors.New("invalid or missing \"main\" field in package.json")
+	}
+
+	return nil
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
