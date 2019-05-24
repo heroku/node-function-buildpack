@@ -20,10 +20,11 @@ package node
 import (
 	"encoding/json"
 	"errors"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/cloudfoundry/libcfbuildpack/detect"
 
 	"path/filepath"
 )
@@ -73,7 +74,9 @@ func validatePackageJson(packageJsonFile, mainJsFunctionFile string) error {
 		return err
 	}
 
-	packageJson := struct {Main string `json:"main"`}{}
+	packageJson := struct {
+		Main string `json:"main"`
+	}{}
 	if err := json.Unmarshal(data, &packageJson); err != nil {
 		return err
 	}
