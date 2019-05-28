@@ -26,9 +26,9 @@ import (
     "github.com/cloudfoundry/libcfbuildpack/test"
     nodeCNB "github.com/cloudfoundry/nodejs-cnb/node"
     "github.com/cloudfoundry/npm-cnb/modules"
+    "github.com/heroku/node-function-buildpack/node"
     . "github.com/onsi/gomega"
     "github.com/projectriff/libfnbuildpack/function"
-    "github.com/projectriff/node-function-buildpack/node"
     "github.com/sclevine/spec"
     "github.com/sclevine/spec/report"
 )

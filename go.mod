@@ -1,4 +1,4 @@
-module github.com/projectriff/node-function-buildpack
+module github.com/heroku/node-function-buildpack
 
 require (
 	github.com/buildpack/libbuildpack v1.10.0
