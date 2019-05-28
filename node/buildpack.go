@@ -24,7 +24,7 @@ import (
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/npm-cnb/modules"
-	"github.com/projectriff/libfnbuildpack/function"
+	"github.com/heroku/libfnbuildpack/function"
 )
 
 type NodeBuildpack struct {
