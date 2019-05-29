@@ -46,6 +46,8 @@ github.com/google/go-github/v24 v24.0.1/go.mod h1:CRqaW1Uns1TCkP0wqTpxYyRxRjxwvK
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
 github.com/heroku/libfnbuildpack v0.2.0 h1:ZV1SByUaueCFgxDL2IHMPi9rlYhrVAgchZXvBgiAH3g=
 github.com/heroku/libfnbuildpack v0.2.0/go.mod h1:MvLCoU/0VcFLb+5xErY7xDwTRn3121O870X11KXzsLE=
+github.com/heroku/libfnbuildpack v0.2.1 h1:Yxjd/Yo26lcGxfN9j5sVtuyvfExOk8a9dvZ7ToJ2ly0=
+github.com/heroku/libfnbuildpack v0.2.1/go.mod h1:MvLCoU/0VcFLb+5xErY7xDwTRn3121O870X11KXzsLE=
 github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
