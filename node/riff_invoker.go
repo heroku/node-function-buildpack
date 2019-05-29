@@ -30,7 +30,7 @@ import (
 	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/nodejs-cnb/node"
-	"github.com/projectriff/libfnbuildpack/function"
+	"github.com/heroku/libfnbuildpack/function"
 )
 
 const (
@@ -116,7 +116,7 @@ func (r RiffNodeInvoker) Contribute() error {
 
 	command := fmt.Sprintf(`node %s/server.js`, r.invokerLayer.Root)
 
-	return r.layers.WriteMetadata(layers.Metadata{
+	return r.layers.WriteApplicationMetadata(layers.Metadata{
 		Processes: layers.Processes{
 			layers.Process{Type: "web", Command: command},
 			layers.Process{Type: "function", Command: command},
