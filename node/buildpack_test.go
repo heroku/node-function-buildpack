@@ -25,7 +25,6 @@ import (
     "github.com/buildpack/libbuildpack/buildplan"
     "github.com/cloudfoundry/libcfbuildpack/test"
     nodeCNB "github.com/cloudfoundry/nodejs-cnb/node"
-    "github.com/cloudfoundry/npm-cnb/modules"
     "github.com/heroku/libfnbuildpack/function"
     . "github.com/onsi/gomega"
     "github.com/sclevine/spec"
@@ -68,32 +67,6 @@ func TestDetect(t *testing.T) {
             }
         })
 
-        it("passes if the NPM app BP applied", func() {
-            f.AddBuildPlan(modules.Dependency, buildplan.Dependency{})
-
-            plan, err := b.Detect(f.Detect, m)
-
-            g.Expect(err).To(BeNil())
-            g.Expect(plan).To(Equal(&buildplan.BuildPlan{
-                nodeCNB.Dependency: buildplan.Dependency{
-                    Metadata: buildplan.Metadata{"launch": true, "build": true},
-                },
-                Dependency: buildplan.Dependency{
-                    Metadata: buildplan.Metadata{FunctionArtifact: ""},
-                },
-            }))
-        })
-
-        it("should fail if more than one .js file exits", func() {
-            test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "square.js"), "module.exports = x => x**2")
-            test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "hello.js"), "module.exports = x => hello")
-
-            plan, err := b.Detect(f.Detect, m)
-
-            g.Expect(plan).To(BeNil())
-            g.Expect(err).ToNot(BeNil())
-        })
-
         it("should fail if no .js file exits", func() {
             plan, err := b.Detect(f.Detect, m)
 
@@ -119,7 +92,7 @@ func TestDetect(t *testing.T) {
             g.Expect(err).ToNot(BeNil())
         })
 
-        it("should enforce that package.json main field corresponds to a file", func() {
+        it("should enforce that package.json main field corresponds to an actual file", func() {
             packageDotJson := `{
 							    "name": "fixture",
 							    "version": "1.0.0",

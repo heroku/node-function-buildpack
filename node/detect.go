@@ -20,6 +20,7 @@ package node
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -34,12 +35,13 @@ func DetectNode(d detect.Detect) (bool, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if len(jsFiles) != 1 {
-		return false, errors.New("could not find or found more than one .js file")
+
+	err = validateSourceFiles(jsFiles)
+	if err != nil {
+		return false, err
 	}
 
-	_, jsFile := filepath.Split(jsFiles[0])
-	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFile)
+	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFiles)
 	if err != nil {
 		return false, err
 	}
@@ -47,7 +49,15 @@ func DetectNode(d detect.Detect) (bool, error) {
 	return true, nil
 }
 
-func validatePackageJson(packageJsonFile, mainJsFunctionFile string) error {
+func validateSourceFiles(jsFiles []string) error {
+	if len(jsFiles) == 0 {
+		return errors.New("no .js source files were found")
+	}
+
+	return nil
+}
+
+func validatePackageJson(packageJsonFile string, jsFiles []string) error {
 	if !fileExists(packageJsonFile) {
 		return errors.New("missing package.json file")
 	}
@@ -65,11 +75,18 @@ func validatePackageJson(packageJsonFile, mainJsFunctionFile string) error {
 		return err
 	}
 
-	if packageJson.Main == "" || packageJson.Main != mainJsFunctionFile {
-		return errors.New("invalid or missing \"main\" field in package.json")
+	if packageJson.Main == "" {
+		return errors.New("missing \"main\" field in package.json")
 	}
 
-	return nil
+	for _, jsFile := range jsFiles {
+		_, filename := filepath.Split(jsFile)
+		if packageJson.Main == filename {
+			return nil
+		}
+	}
+
+	return errors.New(fmt.Sprintf("could not find \"%s\"", packageJson.Main))
 }
 
 func fileExists(filename string) bool {
