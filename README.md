@@ -1,5 +1,7 @@
 # `node-function-buildpack`
 
+[![CircleCI](https://circleci.com/gh/heroku/node-function-buildpack.svg?style=svg)](https://circleci.com/gh/heroku/node-function-buildpack)
+
 The Node Function Buildpack is a Cloud Native Buildpack V3 that provides the riff [Node Function Invoker](https://github.com/projectriff/node-function-invoker) to functions.
 
 This buildpack is designed to work in collaboration with other buildpacks, which are tailored to
