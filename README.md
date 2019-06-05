@@ -47,8 +47,8 @@ make
 ```
 
 This will package (with pre-downloaded cache layers) the buildpack in the
-`artifactory/io/projectriff/node/io.projectriff.node/latest` directory. That can be used as a `uri` in a `builder.toml`
-file of a builder (see https://github.com/projectriff/builder)
+`artifactory/heroku/node-function/latest` directory. That can be used as a `uri` in a `functions-builder.toml`
+file of a builder (see https://github.com/heroku/pack-images)
 
 ## License
 
