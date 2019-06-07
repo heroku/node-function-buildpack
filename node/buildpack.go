@@ -21,10 +21,12 @@ import (
 	"fmt"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/heroku/libhkbuildpack/build"
-	"github.com/heroku/libhkbuildpack/detect"
+	"github.com/buildpack/libbuildpack/layers"
+	"github.com/buildpack/libbuildpack/logger"
 	"github.com/cloudfoundry/npm-cnb/modules"
 	"github.com/heroku/libfnbuildpack/function"
+	"github.com/heroku/libhkbuildpack/build"
+	"github.com/heroku/libhkbuildpack/detect"
 )
 
 type NodeBuildpack struct {
@@ -62,7 +64,32 @@ func (*NodeBuildpack) Build(b build.Build) error {
 	} else if !ok {
 		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
 	}
-	return invoker.Contribute()
+	if err := invoker.Contribute(); err != nil {
+		return err
+	}
+
+	log, err := logger.DefaultLogger(b.Platform.Root)
+	if err != nil {
+		return err
+	}
+
+	layersDir := layers.NewLayers(b.Layers.Root, log)
+	systemLayer := layersDir.Layer("system")
+	sysFunc, err := NewSystemFunction(systemLayer)
+	if err != nil {
+		return err
+	} else if !ok {
+		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
+	}
+
+	if err := sysFunc.Contribute(); err != nil {
+		return err
+	}
+
+	// make Ben happy (we can remove this when we remove libcfbuildpack)
+	b.Layers.Layer("system").Touch()
+
+	return nil
 }
 
 func NewBuildpack() function.Buildpack {

@@ -102,7 +102,7 @@ func (r RiffNodeInvoker) Contribute() error {
 	}
 
 	if err := r.functionLayer.Contribute(marker{"NodeJS", r.functionJS}, func(layer layers.Layer) error {
-		return layer.OverrideLaunchEnv("FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
+		return layer.OverrideLaunchEnv("HEROKU_FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
 	}, layers.Launch); err != nil {
 		return err
 	}
