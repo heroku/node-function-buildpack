@@ -18,3 +18,5 @@ dependency-cache/
 .DS_Store
 artifactory/
 .vscode/
+
+node-function-buildpack-*.tgz
