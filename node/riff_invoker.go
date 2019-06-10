@@ -96,13 +96,6 @@ func (r RiffNodeInvoker) Contribute() error {
 			return e
 		}
 
-		if e := layer.OverrideLaunchEnv("HOST", "0.0.0.0"); e != nil {
-			return e
-		}
-		if e := layer.OverrideLaunchEnv("HTTP_PORT", "8080"); e != nil {
-			return e
-		}
-
 		return nil
 	}, layers.Launch); err != nil {
 		return err
