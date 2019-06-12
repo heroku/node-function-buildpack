@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# fail fast
+set -eo pipefail
+
+BP_DIR="${1:?}"
+
+check_go() {
+  if ! [ -x "$(command -v go)" ]; then
+    echo 'Error: Go is not installed.' >&2
+    exit 1
+  fi
+
+  modversion=$(awk '$1 == "go" { gsub(/go/, "", $2); split($2, a, "."); printf "%d.%d", a[1], a[2]; exit }' < go.mod)
+  localversion=$(go version | awk '{ gsub(/go/, "", $3); split($3, a, "."); printf "%d.%d", a[1], a[2]; exit }')
+
+  if [ "$localversion" != "$modversion" ]; then
+    echo "Error: Go version mismatch. Expected ${modversion}. Got ${localversion}" >&2
+    exit 1
+  fi
+}
+
+build_cmd() {
+  local cmd=${1:?}
+  local dest=${2:?}
+
+  echo -n "---> Building bin/${cmd}... "
+  go build -o "${dest}/bin/${cmd}" ./cmd/${cmd}/...
+  chmod +x "${dest}/bin/${cmd}"
+  echo "ok"
+}
+
+check_go
+
+build_cmd "detect" $BP_DIR
+build_cmd "build" $BP_DIR
+
+echo "---> Built buildpack into ${BP_DIR}"
