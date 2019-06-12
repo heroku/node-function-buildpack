@@ -1,5 +1,7 @@
 module github.com/heroku/node-function-buildpack
 
+go 1.12
+
 require (
 	github.com/buildpack/libbuildpack v1.14.0
 	github.com/cloudfoundry/libcfbuildpack v1.55.0
