@@ -10,8 +10,8 @@ test:
 	go test -v ./...
 
 build:
-	@GOOS=linux go build -o "bin/detect" ./detect/main.go
-	@GOOS=linux go build -o "bin/build" ./build/main.go
+	@GOOS=linux go build -o "bin/detect" ./cmd/detect/...
+	@GOOS=linux go build -o "bin/build" ./cmd/build/...
 
 package: clean build
 	@tar cvzf node-function-buildpack-$(VERSION).tgz bin/ buildpack.toml README.md LICENSE
