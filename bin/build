@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# bin/build <platform> <plan> <cache-dir> <launch-dir>
+set -eo pipefail
+
+status() {
+  local color="\033[0;35m"
+  local no_color="\033[0m"
+  echo -e "\n${color}[${1:-""}]${no_color}"
+}
+
+status "Node Function Buildpack"
+
+BP_DIR=$(cd $(dirname $0)/..; pwd) # absolute path
+
+if [[ ! -f "$BP_DIR/bin/detect" ]] || [[ ! -f "$BP_DIR/bin/builder" ]]; then
+  echo "Bootstrapping buildpack binaries"
+  bash "$BP_DIR/bin/bootstrap" "$BP_DIR"
+else
+  VERSION="$(cat $BP_DIR/buildpack.toml | grep version | sed -e 's/version = //g' | xargs)"
+  echo "Version ${VERSION}"
+fi
+
+$BP_DIR/bin/builder $?

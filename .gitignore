@@ -13,10 +13,12 @@
 # limitations under the License.
 
 .idea/
-bin/
 dependency-cache/
 .DS_Store
 artifactory/
 .vscode/
+
+bin/detector
+bin/builder
 
 node-function-buildpack-*.tgz
