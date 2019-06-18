@@ -4,22 +4,24 @@
 set -eo pipefail
 
 BP_DIR="${1:?}"
+GO_VERSION="1.11.2"
+
+go_url() {
+  local platform='unknown'
+  local unamestr=`uname`
+  if [[ "$unamestr" == 'Linux' ]]; then
+    platform='linux'
+  elif [[ "$unamestr" == 'Darwin' ]]; then
+    platform='darwin'
+  fi
+
+  echo "https://dl.google.com/go/go${GO_VERSION}.${platform}-amd64.tar.gz"
+}
 
 install_go() {
   local go_dir="${1:?}"
   local go_tgz="$(mktemp /tmp/go.tgz.XXXXXX)"
-  curl --retry 3 -sf -o "$go_tgz" -L https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
-
-  local expected_sha="1dfe664fa3d8ad714bbd15a36627992effd150ddabd7523931f077b3926d736d"
-  local actual_sha="$(shasum -a 256 "$go_tgz" | awk '{ print $1 }')"
-  if [ "$expected_sha" != "$actual_sha" ]; then
-    echo "failed"
-    echo "Invalid checksum!"
-    echo "Expected => $expected_sha"
-    echo "Found    => $actual_sha"
-    exit 1
-  fi
-
+  curl --retry 3 -sf -o "$go_tgz" -L $(go_url)
   tar -C "$go_dir" -xzf "$go_tgz"
 }
 
