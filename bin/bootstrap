@@ -38,7 +38,7 @@ install_go "$go_dir"
 export PATH="$PATH:${go_dir}/go/bin"
 
 cd "$BP_DIR"
-build_cmd "detect"
-build_cmd "build"
+build_cmd "detector"
+build_cmd "builder"
 
 echo "---> Built buildpack into ${BP_DIR}"
