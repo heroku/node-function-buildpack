@@ -5,34 +5,40 @@ set -eo pipefail
 
 BP_DIR="${1:?}"
 
-check_go() {
-  if ! [ -x "$(command -v go)" ]; then
-    echo 'Error: Go is not installed.' >&2
+install_go() {
+  local go_dir="${1:?}"
+  local go_tgz="$(mktemp /tmp/go.tgz.XXXXXX)"
+  curl --retry 3 -sf -o "$go_tgz" -L https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
+
+  local expected_sha="1dfe664fa3d8ad714bbd15a36627992effd150ddabd7523931f077b3926d736d"
+  local actual_sha="$(shasum -a 256 "$go_tgz" | awk '{ print $1 }')"
+  if [ "$expected_sha" != "$actual_sha" ]; then
+    echo "failed"
+    echo "Invalid checksum!"
+    echo "Expected => $expected_sha"
+    echo "Found    => $actual_sha"
     exit 1
   fi
 
-  modversion=$(awk '$1 == "go" { gsub(/go/, "", $2); split($2, a, "."); printf "%d.%d", a[1], a[2]; exit }' < go.mod)
-  localversion=$(go version | awk '{ gsub(/go/, "", $3); split($3, a, "."); printf "%d.%d", a[1], a[2]; exit }')
-
-  if [ "$localversion" != "$modversion" ]; then
-    echo "Error: Go version mismatch. Expected ${modversion}. Got ${localversion}" >&2
-    exit 1
-  fi
+  tar -C "$go_dir" -xzf "$go_tgz"
 }
 
 build_cmd() {
   local cmd=${1:?}
-  local dest=${2:?}
 
   echo -n "---> Building bin/${cmd}... "
-  go build -o "${dest}/bin/${cmd}" ./cmd/${cmd}/...
-  chmod +x "${dest}/bin/${cmd}"
+  go build -o "bin/${cmd}" ./cmd/${cmd}/...
+  chmod +x "bin/${cmd}"
   echo "ok"
 }
 
-check_go
+go_dir="$(mktemp -d)" # TODO put it in the cache
+install_go "$go_dir"
 
-build_cmd "detect" $BP_DIR
-build_cmd "build" $BP_DIR
+export PATH="$PATH:${go_dir}/go/bin"
+
+cd "$BP_DIR"
+build_cmd "detect"
+build_cmd "build"
 
 echo "---> Built buildpack into ${BP_DIR}"
