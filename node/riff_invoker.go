@@ -25,11 +25,11 @@ import (
 
 	"github.com/buildpack/libbuildpack/application"
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/libcfbuildpack/build"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/libcfbuildpack/helper"
-	"github.com/cloudfoundry/libcfbuildpack/layers"
-	"github.com/cloudfoundry/nodejs-cnb/node"
+	"github.com/heroku/libhkbuildpack/build"
+	"github.com/heroku/libhkbuildpack/detect"
+	"github.com/heroku/libhkbuildpack/helper"
+	"github.com/heroku/libhkbuildpack/layers"
+	"github.com/cloudfoundry/node-engine-cnb/node"
 	"github.com/heroku/libfnbuildpack/function"
 )
 

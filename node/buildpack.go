@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/libcfbuildpack/build"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/heroku/libhkbuildpack/build"
+	"github.com/heroku/libhkbuildpack/detect"
 	"github.com/cloudfoundry/npm-cnb/modules"
 	"github.com/heroku/libfnbuildpack/function"
 )

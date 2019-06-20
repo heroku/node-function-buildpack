@@ -22,3 +22,4 @@ bin/detector
 bin/builder
 
 node-function-buildpack-*.tgz
+c.out

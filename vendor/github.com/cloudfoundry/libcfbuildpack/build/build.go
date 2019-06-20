@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,8 +17,6 @@
 package build
 
 import (
-	"fmt"
-
 	"github.com/buildpack/libbuildpack/build"
 	"github.com/buildpack/libbuildpack/buildplan"
 	bp "github.com/buildpack/libbuildpack/layers"
@@ -49,16 +47,13 @@ type Build struct {
 	Services services.Services
 }
 
-// String makes Build satisfy the Stringer interface.
-func (b Build) String() string {
-	return fmt.Sprintf("Build{ Build: %s, Buildpack: %s, Layers: %s, Logger: %s, Services: %s }",
-		b.Build, b.Buildpack, b.Layers, b.Logger, b.Services)
-}
-
 // Success signals a successful build by exiting with a zero status code.  Combines specied build plan with build
 // plan entries for all contributed dependencies.
 func (b Build) Success(buildPlan buildplan.BuildPlan) (int, error) {
-	code, err := b.Build.Success(b.merge(b.Layers.DependencyBuildPlans, buildPlan))
+	bp := buildplan.BuildPlan{}
+	bp.Merge(b.Layers.DependencyBuildPlans, buildPlan)
+
+	code, err := b.Build.Success(bp)
 	if err != nil {
 		return code, err
 	}
@@ -69,18 +64,6 @@ func (b Build) Success(buildPlan buildplan.BuildPlan) (int, error) {
 
 	b.Logger.Info("")
 	return code, nil
-}
-
-func (b Build) merge(buildPlans ...buildplan.BuildPlan) buildplan.BuildPlan {
-	merged := buildplan.BuildPlan{}
-
-	for _, bp := range buildPlans {
-		for k, v := range bp {
-			merged[k] = v
-		}
-	}
-
-	return merged
 }
 
 // DefaultBuild creates a new instance of Build using default values.  During initialization, all platform environment
