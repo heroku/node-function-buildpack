@@ -1,5 +1,6 @@
 .PHONY: clean build test all
 
+PROJECT_ROOT := $(shell pwd)
 SHELL=/bin/bash -o pipefail
 
 VERSION := "v$$(cat buildpack.toml | grep -m 1 version | sed -e 's/version = //g' | xargs)"
@@ -7,7 +8,7 @@ VERSION := "v$$(cat buildpack.toml | grep -m 1 version | sed -e 's/version = //g
 all: test build
 
 test:
-	go test -v ./...
+	go test -v -mod vendor -race -coverprofile c.out $(PROJECT_ROOT)/...
 
 build:
 	@GOOS=linux go build -o "bin/detect" ./cmd/detect/...
@@ -19,5 +20,4 @@ package: clean build
 clean:
 	@rm -fR artifactory/
 	@rm -fR dependency-cache/
-	@rm -fR bin/
 	@rm -f node-function-buildpack-$(VERSION).tgz
