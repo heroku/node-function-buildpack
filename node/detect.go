@@ -25,7 +25,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/heroku/libhkbuildpack/detect"
 
 	"path/filepath"
 )

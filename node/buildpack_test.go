@@ -23,8 +23,8 @@ import (
     "testing"
 
     "github.com/buildpack/libbuildpack/buildplan"
-    "github.com/cloudfoundry/libcfbuildpack/test"
-    nodeCNB "github.com/cloudfoundry/nodejs-cnb/node"
+    "github.com/heroku/libhkbuildpack/test"
+    nodeCNB "github.com/cloudfoundry/node-engine-cnb/node"
     "github.com/heroku/libfnbuildpack/function"
     . "github.com/onsi/gomega"
     "github.com/sclevine/spec"
