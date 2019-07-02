@@ -8,4 +8,4 @@ if [[ ! -f "$BP_DIR/bin/detect" ]] || [[ ! -f "$BP_DIR/bin/builder" ]]; then
   bash "$BP_DIR/bin/bootstrap" "$BP_DIR"
 fi
 
-$BP_DIR/bin/detector $?
+$BP_DIR/bin/detector $@
