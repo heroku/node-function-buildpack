@@ -20,4 +20,4 @@ else
   echo "Version ${VERSION}"
 fi
 
-$BP_DIR/bin/builder $?
+$BP_DIR/bin/builder $@
