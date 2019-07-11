@@ -19,6 +19,7 @@ package node
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -102,7 +103,22 @@ func (r RiffNodeInvoker) Contribute() error {
 	}
 
 	if err := r.functionLayer.Contribute(marker{"NodeJS", r.functionJS}, func(layer layers.Layer) error {
-		layer.OverrideLaunchEnv("FUNCTION_URI", filepath.Join(r.application.Root, "system.js"))
+		layer.OverrideLaunchEnv("FUNCTION_URI", filepath.Join(layer.Root, "system.js"))
+		bpbindir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		input, err := ioutil.ReadFile(filepath.Join(bpbindir, "../node/system.js"))
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(layer.Root, "system.js"), input, 0644)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
 		return layer.OverrideLaunchEnv("USER_FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
 	}, layers.Launch); err != nil {
 		return err
