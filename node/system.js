@@ -4,13 +4,9 @@ const fn = (fn => {
         return fn.default;
     }
     return fn;
-})(require(USER_FUNCTION_URI));
+})(require(process.env.USER_FUNCTION_URI));
 
-const middlewares = [];
 
 module.exports = (args) => {
-  for each middleware in middlewares {
-    middleware.apply(args)
-  }
-  fn.apply(args)
+  fn.apply(this, args)
 }
