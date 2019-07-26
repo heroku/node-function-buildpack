@@ -31,7 +31,7 @@ import (
 )
 
 func DetectNode(d detect.Detect) (bool, error) {
-	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*.js"))
+	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*/*.js"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,9 +79,10 @@ func validatePackageJson(packageJsonFile string, jsFiles []string) error {
 		return errors.New("missing \"main\" field in package.json")
 	}
 
+    _, mainFileName := filepath.Split(packageJson.Main)
 	for _, jsFile := range jsFiles {
 		_, filename := filepath.Split(jsFile)
-		if packageJson.Main == filename {
+		if mainFileName == filename {
 			return nil
 		}
 	}
