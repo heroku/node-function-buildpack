@@ -31,7 +31,7 @@ import (
 )
 
 func DetectNode(d detect.Detect) (bool, error) {
-	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*/*.js"))
+	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*.[jt]s"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func DetectNode(d detect.Detect) (bool, error) {
 		return false, err
 	}
 
-	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFiles)
+	err = validatePackageJson(d.Application.Root)
 	if err != nil {
 		return false, err
 	}
@@ -57,7 +57,8 @@ func validateSourceFiles(jsFiles []string) error {
 	return nil
 }
 
-func validatePackageJson(packageJsonFile string, jsFiles []string) error {
+func validatePackageJson(applicationRoot string) error {
+	var packageJsonFile = filepath.Join(applicationRoot, "package.json")
 	if !fileExists(packageJsonFile) {
 		return errors.New("missing package.json file")
 	}
@@ -79,15 +80,11 @@ func validatePackageJson(packageJsonFile string, jsFiles []string) error {
 		return errors.New("missing \"main\" field in package.json")
 	}
 
-    _, mainFileName := filepath.Split(packageJson.Main)
-	for _, jsFile := range jsFiles {
-		_, filename := filepath.Split(jsFile)
-		if mainFileName == filename {
-			return nil
-		}
+	if _, err := os.Stat(filepath.Join(applicationRoot, packageJson.Main)); err == nil {
+		return nil
 	}
 
-	return errors.New(fmt.Sprintf("could not find \"%s\"", packageJson.Main))
+	return errors.New(fmt.Sprintf("could not find \"%s\"", filepath.Join(applicationRoot, packageJson.Main)))
 }
 
 func fileExists(filename string) bool {

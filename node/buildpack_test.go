@@ -116,6 +116,32 @@ func TestDetect(t *testing.T) {
                 },
             }))
         })
+
+        it("should enforce that typescript files work", func() {
+			packageDotJson := `{
+							    "name": "fixture",
+							    "version": "1.0.0",
+							    "main": "dist/square.js",
+							    "dependencies": {
+							    }
+			                  }`
+
+			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "package.json"), packageDotJson)
+			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "square.ts"), packageDotJson)
+			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "dist", "square.js"), "module.exports = x => x**2")
+
+			plan, err := b.Detect(f.Detect, m)
+
+			g.Expect(err).To(BeNil())
+			g.Expect(plan).To(Equal(&buildplan.BuildPlan{
+				nodeCNB.Dependency: buildplan.Dependency{
+					Metadata: buildplan.Metadata{"launch": true, "build": true},
+				},
+				Dependency: buildplan.Dependency{
+					Metadata: buildplan.Metadata{FunctionArtifact: ""},
+				},
+			}))
+		})
     }, spec.Report(report.Terminal{}))
 }
 
@@ -151,7 +177,7 @@ func TestBuild(t *testing.T) {
 func deleteFile(t *testing.T, filename string) {
     t.Helper()
 
-    if err := os.Remove(filename); err != nil {
+    if err := os.RemoveAll(filename); err != nil {
         t.Fatal(err)
     }
 }
