@@ -15,7 +15,7 @@
 [buildpack]
 id = "heroku/node-function"
 name = "Node Function Buildpack"
-version = "0.4.0"
+version = "0.4.1"
 
 [[stacks]]
 id = "heroku-18"
@@ -23,14 +23,14 @@ id = "heroku-18"
 [[metadata.dependencies]]
 id      = "riff-invoker-node"
 name    = "riff Node Invoker"
-version = "0.1.1"
-uri     = "https://storage.googleapis.com/projectriff/node-function-invoker/releases/v0.1.1/node-function-invoker-0.1.1.tgz"
-sha256  = "18682e55a8cefcc5a7b76000138ab6856a75d5e607aa7af5d28f84e2217fc66a"
+version = "0.1.3"
+uri     = "https://github.com/heroku/node-function-invoker/archive/v0.1.3-cloudevents.tar.gz"
+sha256  = "577a84a74bf49527ec84c515550f1ce721859f6950fb6d5a03775c2e5d1922dc"
 stacks  = [ "heroku-18" ]
 
   [[metadata.dependencies.licenses]]
   type = "Apache-2.0"
-  uri  = "https://github.com/projectriff/node-function-invoker/blob/master/LICENSE"
+  uri  = "https://github.com/heroku/node-function-invoker/blob/master/LICENSE"
 
 [metadata]
   pre_package = "ci/build.sh"
