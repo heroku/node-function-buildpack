@@ -18,6 +18,9 @@ dependency-cache/
 artifactory/
 .vscode/
 
+package-lock.json
+node_modules
+
 bin/detector
 bin/builder
 
