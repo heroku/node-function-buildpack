@@ -33,7 +33,7 @@ func (f SystemFunction) Contribute() error {
 		return err
 	}
 
-	if err := os.MkdirAll(f.Layer.Root, 755); err != nil {
+	if err := os.MkdirAll(f.Layer.Root, 0755); err != nil {
 		return err
 	}
 
@@ -47,7 +47,7 @@ func (f SystemFunction) Contribute() error {
 		}
 
 		destFilename := filepath.Join(f.Layer.Root, filename)
-		err = ioutil.WriteFile(destFilename, file, 755)
+		err = ioutil.WriteFile(destFilename, file, 0755)
 		if err != nil {
 			fmt.Println("Couldn't write file", destFilename)
 			return err
