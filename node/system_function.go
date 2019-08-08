@@ -3,13 +3,14 @@ package node
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/layers"
 )
 
 type SystemFunction struct {
-	Path string `toml:"path"`
+	Path  string `toml:"path"`
 	Layer layers.Layer
 }
 
@@ -21,7 +22,7 @@ func NewSystemFunction(l layers.Layer) (SystemFunction, error) {
 	}
 
 	return SystemFunction{
-		Path: filepath.Join(buildpackDir, "../lib/system.js"),
+		Path:  filepath.Join(buildpackDir, "../system"),
 		Layer: l,
 	}, nil
 }
@@ -31,18 +32,31 @@ func (f SystemFunction) Contribute() error {
 		return err
 	}
 
-	jsFile, err := ioutil.ReadFile(filepath.Join(f.Path))
-	if err != nil {
+	filenames := []string{"index.js", "package.json"}
+	for _, filename := range filenames {
+		file, err := ioutil.ReadFile(filepath.Join(filename))
+		if err != nil {
+			return err
+		}
+
+		destFile := filepath.Join(f.Layer.Root, filename)
+		err = ioutil.WriteFile(destFile, file, 644)
+		if err != nil {
+			return err
+		}
+	}
+
+	systemFunc := filepath.Join(f.Layer.Root, "index.js")
+	if err := f.Layer.OverrideLaunchEnv("FUNCTION_URI", systemFunc); err != nil {
 		return err
 	}
 
-	destFile := filepath.Join(f.Layer.Root, "system.js")
-	if err := f.Layer.OverrideLaunchEnv("FUNCTION_URI", destFile); err != nil {
-		return err
-	}
-
-	if err = ioutil.WriteFile(destFile, jsFile, 0644); err != nil {
-		return err
+	cmd := exec.Command("npm", "install", "--production")
+	cmd.Stdout = os.Stderr
+	cmd.Stderr = os.Stderr
+	cmd.Dir = f.Layer.Root
+	if e := cmd.Run(); e != nil {
+		return e
 	}
 
 	return nil
