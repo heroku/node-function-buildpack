@@ -2,10 +2,6 @@
   "name": "node-function-buildpack",
   "version": "0.4.1",
   "description": "A buildpack to build node functions",
-  "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
   "dependencies": {
     "@projectriff/message": "^1.0.0",
     "cloudevents-sdk": "^0.3.0"

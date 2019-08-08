@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -22,7 +23,7 @@ func NewSystemFunction(l layers.Layer) (SystemFunction, error) {
 	}
 
 	return SystemFunction{
-		Path:  filepath.Join(buildpackDir, "../system"),
+		Path:  filepath.Join(buildpackDir, "../system/"),
 		Layer: l,
 	}, nil
 }
@@ -32,16 +33,23 @@ func (f SystemFunction) Contribute() error {
 		return err
 	}
 
-	filenames := []string{"index.js", "package.json"}
+	if err := os.MkdirAll(f.Layer.Root, 755); err != nil {
+		return err
+	}
+
+	filenames := []string{"index.js", "package.json", "package-lock.json"}
 	for _, filename := range filenames {
-		file, err := ioutil.ReadFile(filepath.Join(filename))
+		sourceFilename := filepath.Join(f.Path, filename)
+		file, err := ioutil.ReadFile(sourceFilename)
 		if err != nil {
+			fmt.Println("Couldn't read file", sourceFilename)
 			return err
 		}
 
-		destFile := filepath.Join(f.Layer.Root, filename)
-		err = ioutil.WriteFile(destFile, file, 644)
+		destFilename := filepath.Join(f.Layer.Root, filename)
+		err = ioutil.WriteFile(destFilename, file, 755)
 		if err != nil {
+			fmt.Println("Couldn't write file", destFilename)
 			return err
 		}
 	}

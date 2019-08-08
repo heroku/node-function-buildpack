@@ -15,7 +15,7 @@ build:
 	@GOOS=linux go build -o "bin/builder" ./cmd/builder/...
 
 package: clean build
-	@git archive --format=tar.gz -o node-function-buildpack-$(VERSION).tar.gz HEAD
+	@tar cvzf node-function-buildpack-$(VERSION).tgz bin/ system/index.js system/package.json system/package-lock.json buildpack.toml README.md LICENSE
 
 clean:
 	@rm -fR artifactory/
