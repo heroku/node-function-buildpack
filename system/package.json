@@ -3,8 +3,7 @@
   "version": "0.4.1",
   "description": "A buildpack to build node functions",
   "dependencies": {
-    "@projectriff/message": "^1.0.0",
-    "cloudevents-sdk": "^0.3.0"
+    "@projectriff/message": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {
