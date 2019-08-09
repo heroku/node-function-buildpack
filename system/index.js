@@ -18,13 +18,13 @@ function getFunction(uri) {
 const userFn = getFunction(USER_FUNCTION_URI);
 
 module.exports = async ({headers, payload}) => {
-  if DEBUG {
+  if (DEBUG) {
     console.log('==System Function Start==');
     console.log('HEADERS:', headers);
     console.log('PAYLOAD:', payload);
   }
   const result = await userFn(payload);
-  if DEBUG {
+  if (DEBUG) {
     console.log('RESULT', result);
     console.log('==System Function End==');
   }
