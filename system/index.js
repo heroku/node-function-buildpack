@@ -1,7 +1,6 @@
 const { Message } = require('@projectriff/message');
-const Unmarshaller = require('../../node_modules/cloudevents-sdk/lib/bindings/http/unmarshaller.js');
 
-const { USER_FUNCTION_URI } = process.env;
+const { USER_FUNCTION_URI, DEBUG } = process.env;
 
 function getFunction(uri) {
   let mod;
@@ -19,20 +18,20 @@ function getFunction(uri) {
 const userFn = getFunction(USER_FUNCTION_URI);
 
 module.exports = async ({headers, payload}) => {
-  console.log('HEADERS:', headers);
-  console.log('PAYLOAD:', payload);
-  let ce, data;
-  try {
-    ce = Unmarshaller.unmarhall(payload, headers);
-    data = ce.getData();
-  } catch (e) {
-    console.log("Couldn't unmarshall message into a cloudevent:", e);
-    data = payload
+  if DEBUG {
+    console.log('==System Function Start==');
+    console.log('HEADERS:', headers);
+    console.log('PAYLOAD:', payload);
   }
-
-  return await userFn(data);
+  const result = await userFn(payload);
+  if DEBUG {
+    console.log('RESULT', result);
+    console.log('==System Function End==');
+  }
+  return result;
 };
 
 module.exports.$argumentType = 'message';
 module.exports.$init = userFn.$init;
 module.exports.$destroy = userFn.$destroy;
+
