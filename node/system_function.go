@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/buildpack/libbuildpack/layers"
+	"github.com/heroku/libhkbuildpack/layers"
 )
 
 type SystemFunction struct {
@@ -15,20 +15,16 @@ type SystemFunction struct {
 	Layer layers.Layer
 }
 
-func NewSystemFunction(l layers.Layer) (SystemFunction, error) {
-	// TODO push this up into buildpack.go
-	buildpackDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		return SystemFunction{}, err
-	}
-
+func NewSystemFunction(l layers.Layer, path string) SystemFunction {
 	return SystemFunction{
-		Path:  filepath.Join(buildpackDir, "../system/"),
+		Path:  path,
 		Layer: l,
-	}, nil
+	}
 }
 
 func (f SystemFunction) Contribute() error {
+	f.Layer.Touch()
+
 	if err := f.Layer.WriteMetadata(f, layers.Launch); err != nil {
 		return err
 	}
@@ -39,7 +35,7 @@ func (f SystemFunction) Contribute() error {
 
 	filenames := []string{"index.js", "package.json", "package-lock.json"}
 	for _, filename := range filenames {
-		sourceFilename := filepath.Join(f.Path, filename)
+		sourceFilename := filepath.Join(f.Path, "system/", filename)
 		file, err := ioutil.ReadFile(sourceFilename)
 		if err != nil {
 			fmt.Println("Couldn't read file", sourceFilename)

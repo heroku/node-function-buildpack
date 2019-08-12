@@ -19,10 +19,10 @@ package node
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/buildpack/libbuildpack/layers"
-	"github.com/buildpack/libbuildpack/logger"
 	"github.com/cloudfoundry/npm-cnb/modules"
 	"github.com/heroku/libfnbuildpack/function"
 	"github.com/heroku/libhkbuildpack/build"
@@ -68,26 +68,18 @@ func (*NodeBuildpack) Build(b build.Build) error {
 		return err
 	}
 
-	log, err := logger.DefaultLogger(b.Platform.Root)
+	systemLayer := b.Layers.Layer("system")
+	bpBinDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		return err
 	}
 
-	layersDir := layers.NewLayers(b.Layers.Root, log)
-	systemLayer := layersDir.Layer("system")
-	sysFunc, err := NewSystemFunction(systemLayer)
-	if err != nil {
-		return err
-	} else if !ok {
-		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
-	}
+	bpDir := filepath.Join(bpBinDir, "../")
+	sysFunc := NewSystemFunction(systemLayer, bpDir)
 
 	if err := sysFunc.Contribute(); err != nil {
 		return err
 	}
-
-	// make Ben happy (we can remove this when we remove libcfbuildpack)
-	b.Layers.Layer("system").Touch()
 
 	return nil
 }
