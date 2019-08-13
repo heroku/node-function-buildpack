@@ -1,6 +1,6 @@
 const { Message } = require('@projectriff/message');
 
-const { USER_FUNCTION_URI, DEBUG } = process.env;
+const { MIDDLEWARE_FUNCTION_URI, USER_FUNCTION_URI, DEBUG } = process.env;
 
 function getFunction(uri) {
   let mod;
@@ -23,7 +23,20 @@ module.exports = async ({headers, payload}) => {
     console.log('HEADERS:', headers);
     console.log('PAYLOAD:', payload);
   }
-  const result = await userFn(payload);
+
+  console.log(MIDDLEWARE_FUNCTION_URI)
+
+  let middlewareResult = 0
+  MIDDLEWARE_FUNCTION_URI.split(':').forEach((mw, index) => {
+    const middlewareFn = getFunction(mw)
+    if (index === 0) {
+      middlewareResult = middlewareFn(payload)
+    } else {
+      middlewareResult = middlewareFn(middlewareResult)
+    }
+  })
+
+  const result = await userFn(middlewareResult);
   if (DEBUG) {
     console.log('RESULT', result);
     console.log('==System Function End==');

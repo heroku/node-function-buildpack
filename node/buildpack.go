@@ -68,15 +68,29 @@ func (*NodeBuildpack) Build(b build.Build) error {
 		return err
 	}
 
+	middlewareLayerA := b.Layers.Layer("middlewareA")
+	middlewareLayerB := b.Layers.Layer("middlewareB")
+
 	systemLayer := b.Layers.Layer("system")
+
 	bpBinDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		return err
 	}
 
 	bpDir := filepath.Join(bpBinDir, "../")
-	sysFunc := NewSystemFunction(systemLayer, bpDir)
 
+	middlewareFuncA := NewMiddlewareFunction(middlewareLayerA, bpDir)
+	if err := middlewareFuncA.Contribute(); err != nil {
+		return err
+	}
+
+	middlewareFuncB := NewMiddlewareFunction(middlewareLayerB, bpDir)
+	if err := middlewareFuncB.Contribute(); err != nil {
+		return err
+	}
+
+	sysFunc := NewSystemFunction(systemLayer, bpDir)
 	if err := sysFunc.Contribute(); err != nil {
 		return err
 	}
