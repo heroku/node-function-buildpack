@@ -18,6 +18,8 @@ dependency-cache/
 artifactory/
 .vscode/
 
+system/node_modules/
+
 bin/detector
 bin/builder
 

@@ -25,12 +25,12 @@ import (
 
 	"github.com/buildpack/libbuildpack/application"
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/node-engine-cnb/node"
+	"github.com/heroku/libfnbuildpack/function"
 	"github.com/heroku/libhkbuildpack/build"
 	"github.com/heroku/libhkbuildpack/detect"
 	"github.com/heroku/libhkbuildpack/helper"
 	"github.com/heroku/libhkbuildpack/layers"
-	"github.com/cloudfoundry/node-engine-cnb/node"
-	"github.com/heroku/libfnbuildpack/function"
 )
 
 const (
@@ -102,7 +102,7 @@ func (r RiffNodeInvoker) Contribute() error {
 	}
 
 	if err := r.functionLayer.Contribute(marker{"NodeJS", r.functionJS}, func(layer layers.Layer) error {
-		return layer.OverrideLaunchEnv("FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
+		return layer.OverrideLaunchEnv("USER_FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
 	}, layers.Launch); err != nil {
 		return err
 	}
