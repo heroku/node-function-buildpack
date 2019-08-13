@@ -35,7 +35,7 @@ func (f SystemFunction) Contribute() error {
 
 	filenames := []string{"index.js", "package.json", "package-lock.json"}
 	for _, filename := range filenames {
-		sourceFilename := filepath.Join(f.Path, "system/", filename)
+		sourceFilename := filepath.Join(f.Path, "system", filename)
 		file, err := ioutil.ReadFile(sourceFilename)
 		if err != nil {
 			fmt.Println("Couldn't read file", sourceFilename)
