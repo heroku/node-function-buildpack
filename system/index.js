@@ -25,12 +25,15 @@ module.exports = async ({headers, payload}) => {
     console.log(MIDDLEWARE_FUNCTION_URI);
   }
 
-  if (MIDDLEWARE_FUNCTION_URI) {
-    MIDDLEWARE_FUNCTION_URI.split(':').forEach((mw, index) => {
-      const middlewareFn = getFunction(mw);
-      payload = middlewareFn(payload);
+  await Promise.all(MIDDLEWARE_FUNCTION_URI.split(':').map(async (middleware) => {
+      try {
+        const middlewareFn = await getFunction(middleware);
+        payload = middlewareFn(payload);
+      } catch (err) {
+        throw err
+      }
     })
-  }
+  );
 
   const result = await userFn(payload);
   if (DEBUG) {
