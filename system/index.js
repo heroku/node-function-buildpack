@@ -20,7 +20,7 @@ const userFn = getFunction(USER_FUNCTION_URI);
 module.exports = async ({headers, payload}) => {
   if (DEBUG) {
     console.log('==System Function Start==');
-    console.log(`HEADERS: ${headers}`);
+    console.log(`HEADERS: ${JSON.stringify(headers)}`);
     console.log(`ORIGINAL PAYLOAD: ${payload}`);
     console.log(`MIDDLEWARE_FUNCTION_URI: ${MIDDLEWARE_FUNCTION_URI}`);
     console.log('==Middleware Function(s) Start==');
