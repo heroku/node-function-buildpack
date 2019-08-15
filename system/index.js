@@ -1,6 +1,6 @@
 const { Message } = require('@projectriff/message');
 
-const { USER_FUNCTION_URI, DEBUG } = process.env;
+const { DEBUG, MIDDLEWARE_FUNCTION_URI, USER_FUNCTION_URI } = process.env;
 
 function getFunction(uri) {
   let mod;
@@ -10,7 +10,7 @@ function getFunction(uri) {
     throw `Could not locate user function at ${uri}: ${e}`
   }
   if (mod.__esModule && typeof mod.default === 'function') {
-      return mod.default;
+    return mod.default;
   }
   return mod;
 }
@@ -22,7 +22,16 @@ module.exports = async ({headers, payload}) => {
     console.log('==System Function Start==');
     console.log('HEADERS:', headers);
     console.log('PAYLOAD:', payload);
+    console.log(MIDDLEWARE_FUNCTION_URI);
   }
+
+  if (MIDDLEWARE_FUNCTION_URI) {
+    MIDDLEWARE_FUNCTION_URI.split(':').forEach((mw, index) => {
+      const middlewareFn = getFunction(mw);
+      payload = middlewareFn(payload);
+    })
+  }
+
   const result = await userFn(payload);
   if (DEBUG) {
     console.log('RESULT', result);
