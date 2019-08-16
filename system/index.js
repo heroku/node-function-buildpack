@@ -26,18 +26,20 @@ module.exports = async ({headers, payload}) => {
     console.log('==Middleware Function(s) Start==');
   }
 
-  await Promise.all(MIDDLEWARE_FUNCTION_URI.split(':').map(async (middleware) => {
-      try {
-        const middlewareFn = await getFunction(middleware);
-        if (DEBUG) {
-          console.log(`MIDDLEWARE RECEIVED PAYLOAD: ${payload}`);
-        }
-        payload = middlewareFn(payload);
-      } catch (err) {
-        throw err
-      }
-    })
-  );
+  if (MIDDLEWARE_FUNCTION_URI) {
+    await Promise.all(MIDDLEWARE_FUNCTION_URI.split(':').map(async (middleware) => {
+          try {
+            const middlewareFn = await getFunction(middleware);
+            if (DEBUG) {
+              console.log(`MIDDLEWARE RECEIVED PAYLOAD: ${payload}`);
+            }
+            payload = middlewareFn(payload);
+          } catch (err) {
+            throw err
+          }
+        })
+    );
+  }
 
   if (DEBUG) {
     console.log('==Middleware Function(s) End==');
