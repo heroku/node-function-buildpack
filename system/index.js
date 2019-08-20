@@ -2,6 +2,14 @@ const { Message } = require('@projectriff/message');
 
 const { DEBUG, MIDDLEWARE_FUNCTION_URI, USER_FUNCTION_URI } = process.env;
 
+function getMiddlewareFunctions(uri) {
+  const middlewareFunctions = [];
+  if (uri) {
+    uri.split(':').forEach(mw => middlewareFunctions.push(getFunction(mw)))
+  }
+  return middlewareFunctions;
+}
+
 function getFunction(uri) {
   let mod;
   try {
@@ -15,6 +23,7 @@ function getFunction(uri) {
   return mod;
 }
 
+const middlewareFns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
 const userFn = getFunction(USER_FUNCTION_URI);
 
 module.exports = async ({headers, payload}) => {
@@ -26,20 +35,17 @@ module.exports = async ({headers, payload}) => {
     console.log('==Middleware Function(s) Start==');
   }
 
-  if (MIDDLEWARE_FUNCTION_URI) {
-    await Promise.all(MIDDLEWARE_FUNCTION_URI.split(':').map(async (middleware) => {
-          try {
-            const middlewareFn = await getFunction(middleware);
-            if (DEBUG) {
-              console.log(`MIDDLEWARE RECEIVED PAYLOAD: ${payload}`);
-            }
-            payload = middlewareFn(payload);
-          } catch (err) {
-            throw err
+  await Promise.all(middlewareFns.map(async (middleware) => {
+        try {
+          if (DEBUG) {
+            console.log(`MIDDLEWARE PAYLOAD: ${payload}`);
           }
-        })
-    );
-  }
+          payload = await middleware(payload);
+        } catch (err) {
+          throw err
+        }
+      })
+  );
 
   if (DEBUG) {
     console.log('==Middleware Function(s) End==');
