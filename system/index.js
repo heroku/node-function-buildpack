@@ -40,7 +40,7 @@ module.exports = async ({headers, payload}) => {
           if (DEBUG) {
             console.log(`MIDDLEWARE PAYLOAD: ${payload}`);
           }
-          payload = await middleware(payload);
+          payload = await middleware({payload, headers});
         } catch (err) {
           throw err
         }
