@@ -29,18 +29,21 @@ const userFn = getFunction(USER_FUNCTION_URI);
 module.exports = async ({headers, payload}) => {
   if (DEBUG) {
     console.log('==System Function Start==');
-    console.log(`HEADERS: ${JSON.stringify(headers)}`);
+    console.log(`HEADERS: ${headers}`);
     console.log(`ORIGINAL PAYLOAD: ${payload}`);
     console.log(`MIDDLEWARE_FUNCTION_URI: ${MIDDLEWARE_FUNCTION_URI}`);
     console.log('==Middleware Function(s) Start==');
   }
 
+  const req = { payload };
+  let res = [];
+
   await Promise.all(middlewareFns.map(async (middleware) => {
         try {
           if (DEBUG) {
-            console.log(`MIDDLEWARE PAYLOAD: ${payload}`);
+            console.log(`MIDDLEWARE REQ: ${req}`);
           }
-          payload = await middleware(payload);
+          res = await middleware(req);
         } catch (err) {
           throw err
         }
@@ -49,9 +52,9 @@ module.exports = async ({headers, payload}) => {
 
   if (DEBUG) {
     console.log('==Middleware Function(s) End==');
-    console.log(`USER FUNCTION RECEIVED PAYLOAD: ${payload}`);
+    console.log(`USER FUNCTION RECEIVED: ${res}`);
   }
-  const result = await userFn(payload);
+  const result = await userFn(...res);
 
   if (DEBUG) {
     console.log('RESULT', result);
