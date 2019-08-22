@@ -35,7 +35,7 @@ module.exports = async ({headers, payload}) => {
     console.log('==Middleware Function(s) Start==');
   }
 
-  const req = { payload };
+  const req = { headers, payload };
   let res = [];
 
   await Promise.all(middlewareFns.map(async (middleware) => {
@@ -53,6 +53,9 @@ module.exports = async ({headers, payload}) => {
   if (DEBUG) {
     console.log('==Middleware Function(s) End==');
     console.log(`USER FUNCTION RECEIVED: ${res}`);
+  }
+  if (!res || res.length === 0) {
+    res.push(payload)
   }
   const result = await userFn(...res);
 
