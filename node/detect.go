@@ -51,7 +51,7 @@ func DetectNode(d detect.Detect) (bool, error) {
 
 func validateSourceFiles(jsFiles []string) error {
 	if len(jsFiles) == 0 {
-		return errors.New("no .js source files were found")
+		return errors.New("no .js or .ts source files were found")
 	}
 
 	return nil
