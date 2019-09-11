@@ -23,35 +23,51 @@ function getFunction(uri) {
   return mod;
 }
 
-const middlewareFns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
-const userFn = getFunction(USER_FUNCTION_URI);
+const middlewareFuns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
+const userFun = getFunction(USER_FUNCTION_URI);
 
 module.exports = async ({headers, payload}) => {
   if (DEBUG) {
     console.log('==System Function Start==');
     console.log(`HEADERS: ${JSON.stringify(headers)}`);
-    console.log(`ORIGINAL PAYLOAD: ${payload}`);
+    console.log(`PAYLOAD: ${JSON.stringify(payload)}`);
     console.log(`MIDDLEWARE_FUNCTION_URI: ${MIDDLEWARE_FUNCTION_URI}`);
     console.log('==Middleware Function(s) Start==');
   }
 
-  await Promise.all(middlewareFns.map(async (middleware) => {
+  const state = {};
+  let middlewareResult = [];
+
+  await Promise.all(middlewareFuns.map(async (middleware) => {
         try {
+          // input should be immutable
+          const input = {
+            payload: typeof payload == "object" ? Object.assign({}, payload) : payload,
+            headers: Object.assign({}, headers)
+          };
           if (DEBUG) {
-            console.log(`MIDDLEWARE PAYLOAD: ${payload}`);
+            console.log(`MIDDLEWARE INPUT: ${JSON.stringify(input)}`);
+            console.log(`MIDDLEWARE STATE: ${JSON.stringify(state)}`);
+            console.log(`MIDDLEWARE RESULT: ${JSON.stringify(middlewareResult)}`);
           }
-          payload = await middleware(payload);
+          middlewareResult = await middleware(input, state, middlewareResult);
+          if (DEBUG) {
+            console.log(`MIDDLEWARE RETURNED: ${JSON.stringify(middlewareResult)}`);
+          }
         } catch (err) {
           throw err
         }
       })
   );
 
+  if (middlewareResult.length === 0) {
+    middlewareResult.push(payload)
+  }
   if (DEBUG) {
     console.log('==Middleware Function(s) End==');
-    console.log(`USER FUNCTION RECEIVED PAYLOAD: ${payload}`);
+    console.log(`USER FUNCTION RECEIVED ARGS: ${JSON.stringify(middlewareResult)}`);
   }
-  const result = await userFn(payload);
+  const result = await userFun(...middlewareResult);
 
   if (DEBUG) {
     console.log('RESULT', result);
@@ -61,5 +77,5 @@ module.exports = async ({headers, payload}) => {
 };
 
 module.exports.$argumentType = 'message';
-module.exports.$init = userFn.$init;
-module.exports.$destroy = userFn.$destroy;
+module.exports.$init = userFun.$init;
+module.exports.$destroy = userFun.$destroy;
