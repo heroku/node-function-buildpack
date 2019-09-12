@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/heroku/libhkbuildpack/detect"
@@ -31,30 +30,12 @@ import (
 )
 
 func DetectNode(d detect.Detect) (bool, error) {
-	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*.[jt]s"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = validateSourceFiles(jsFiles)
-	if err != nil {
-		return false, err
-	}
-
-	err = validatePackageJson(d.Application.Root)
+	err := validatePackageJson(d.Application.Root)
 	if err != nil {
 		return false, err
 	}
 
 	return true, nil
-}
-
-func validateSourceFiles(jsFiles []string) error {
-	if len(jsFiles) == 0 {
-		return errors.New("no .js or .ts source files were found")
-	}
-
-	return nil
 }
 
 func validatePackageJson(applicationRoot string) error {
@@ -78,6 +59,10 @@ func validatePackageJson(applicationRoot string) error {
 
 	if packageJson.Main == "" {
 		return errors.New("missing \"main\" field in package.json")
+	}
+
+	if filepath.Ext(packageJson.Main) != ".js" {
+		return errors.New("\"main\" field in package.json is not a Javascript file")
 	}
 
 	if _, err := os.Stat(filepath.Join(applicationRoot, packageJson.Main)); err == nil {
