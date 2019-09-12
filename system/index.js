@@ -60,12 +60,13 @@ module.exports = async ({headers, payload}) => {
       })
   );
 
-  if (middlewareResult.length === 0) {
-    middlewareResult.push(payload)
-  }
   if (DEBUG) {
     console.log('==Middleware Function(s) End==');
     console.log(`USER FUNCTION RECEIVED ARGS: ${JSON.stringify(middlewareResult)}`);
+  }
+
+  if (!Array.isArray(middlewareResult)) {
+    throw new Error('Invalid return type, middleware must return an array of arguments')
   }
   const result = await userFun(...middlewareResult);
 
