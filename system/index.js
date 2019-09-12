@@ -36,7 +36,7 @@ module.exports = async ({headers, payload}) => {
   }
 
   const state = {};
-  let middlewareResult = [];
+  let middlewareResult = [payload];
 
   await Promise.all(middlewareFuns.map(async (middleware) => {
         try {
