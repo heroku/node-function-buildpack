@@ -23,8 +23,8 @@ function getFunction(uri) {
   return mod;
 }
 
-const middlewareFuns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
-const userFun = getFunction(USER_FUNCTION_URI);
+const middlewareFns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
+const userFn = getFunction(USER_FUNCTION_URI);
 
 module.exports = async ({headers, payload}) => {
   if (DEBUG) {
@@ -38,7 +38,7 @@ module.exports = async ({headers, payload}) => {
   const state = {};
   let middlewareResult = [payload];
 
-  await Promise.all(middlewareFuns.map(async (middleware) => {
+  await Promise.all(middlewareFns.map(async (middleware) => {
         try {
           // input should be immutable
           const input = {
@@ -68,7 +68,7 @@ module.exports = async ({headers, payload}) => {
     console.log(`USER FUNCTION RECEIVED ARGS: ${JSON.stringify(middlewareResult)}`);
   }
 
-  const result = await userFun(...middlewareResult);
+  const result = await userFn(...middlewareResult);
 
   if (DEBUG) {
     console.log('RESULT', result);
@@ -78,5 +78,5 @@ module.exports = async ({headers, payload}) => {
 };
 
 module.exports.$argumentType = 'message';
-module.exports.$init = userFun.$init;
-module.exports.$destroy = userFun.$destroy;
+module.exports.$init = userFn.$init;
+module.exports.$destroy = userFn.$destroy;
