@@ -30,17 +30,33 @@ module.exports = async ({headers, payload}) => {
   if (DEBUG) {
     console.log('==System Function Start==');
     console.log(`HEADERS: ${JSON.stringify(headers)}`);
-    console.log(`ORIGINAL PAYLOAD: ${payload}`);
+    console.log(`PAYLOAD: ${JSON.stringify(payload)}`);
     console.log(`MIDDLEWARE_FUNCTION_URI: ${MIDDLEWARE_FUNCTION_URI}`);
     console.log('==Middleware Function(s) Start==');
   }
 
+  const state = {};
+  let middlewareResult = [payload];
+
   await Promise.all(middlewareFns.map(async (middleware) => {
         try {
+          // input should be immutable
+          const input = {
+            payload: typeof payload == "object" ? Object.assign({}, payload) : payload,
+            headers: Object.assign({}, headers)
+          };
           if (DEBUG) {
-            console.log(`MIDDLEWARE PAYLOAD: ${payload}`);
+            console.log(`MIDDLEWARE INPUT: ${JSON.stringify(input)}`);
+            console.log(`MIDDLEWARE STATE: ${JSON.stringify(state)}`);
+            console.log(`MIDDLEWARE RESULT: ${JSON.stringify(middlewareResult)}`);
           }
-          payload = await middleware(payload);
+          middlewareResult = await middleware(input, state, middlewareResult);
+          if (DEBUG) {
+            console.log(`MIDDLEWARE RETURNED: ${JSON.stringify(middlewareResult)}`);
+          }
+          if (!Array.isArray(middlewareResult)) {
+            throw new Error('Invalid return type, middleware must return an array of arguments')
+          }
         } catch (err) {
           throw err
         }
@@ -49,9 +65,10 @@ module.exports = async ({headers, payload}) => {
 
   if (DEBUG) {
     console.log('==Middleware Function(s) End==');
-    console.log(`USER FUNCTION RECEIVED PAYLOAD: ${payload}`);
+    console.log(`USER FUNCTION RECEIVED ARGS: ${JSON.stringify(middlewareResult)}`);
   }
-  const result = await userFn(payload);
+
+  const result = await userFn(...middlewareResult);
 
   if (DEBUG) {
     console.log('RESULT', result);
