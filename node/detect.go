@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/heroku/libhkbuildpack/detect"
@@ -31,17 +30,7 @@ import (
 )
 
 func DetectNode(d detect.Detect) (bool, error) {
-	jsFiles, err := filepath.Glob(filepath.Join(d.Application.Root, "*.js"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = validateSourceFiles(jsFiles)
-	if err != nil {
-		return false, err
-	}
-
-	err = validatePackageJson(filepath.Join(d.Application.Root, "package.json"), jsFiles)
+	err := validatePackageJson(d.Application.Root)
 	if err != nil {
 		return false, err
 	}
@@ -49,15 +38,8 @@ func DetectNode(d detect.Detect) (bool, error) {
 	return true, nil
 }
 
-func validateSourceFiles(jsFiles []string) error {
-	if len(jsFiles) == 0 {
-		return errors.New("no .js source files were found")
-	}
-
-	return nil
-}
-
-func validatePackageJson(packageJsonFile string, jsFiles []string) error {
+func validatePackageJson(applicationRoot string) error {
+	var packageJsonFile = filepath.Join(applicationRoot, "package.json")
 	if !fileExists(packageJsonFile) {
 		return errors.New("missing package.json file")
 	}
@@ -79,14 +61,15 @@ func validatePackageJson(packageJsonFile string, jsFiles []string) error {
 		return errors.New("missing \"main\" field in package.json")
 	}
 
-	for _, jsFile := range jsFiles {
-		_, filename := filepath.Split(jsFile)
-		if packageJson.Main == filename {
-			return nil
-		}
+	if filepath.Ext(packageJson.Main) != ".js" {
+		return errors.New("\"main\" field in package.json is not a Javascript file")
 	}
 
-	return errors.New(fmt.Sprintf("could not find \"%s\"", packageJson.Main))
+	if _, err := os.Stat(filepath.Join(applicationRoot, packageJson.Main)); err == nil {
+		return nil
+	}
+
+	return errors.New(fmt.Sprintf("could not find \"%s\"", filepath.Join(applicationRoot, packageJson.Main)))
 }
 
 func fileExists(filename string) bool {
