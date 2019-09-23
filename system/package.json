@@ -1,6 +1,6 @@
 {
   "name": "node-function-buildpack",
-  "version": "0.4.1",
+  "version": "0.4.3",
   "description": "A buildpack to build node functions",
   "dependencies": {
     "@projectriff/message": "^1.0.0"

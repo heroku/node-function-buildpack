@@ -16,7 +16,7 @@ api = "0.2"
 [buildpack]
 id = "heroku/node-function"
 name = "Node Function Buildpack"
-version = "0.4.1"
+version = "0.4.3"
 
 [[stacks]]
 id = "heroku-18"
