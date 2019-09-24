@@ -17,6 +17,7 @@
 package node
 
 import (
+	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -190,9 +191,10 @@ func TestBuild(t *testing.T) {
 		})
 
 		it.Pend("will build if passed detection", func() {
-			plan := buildplan.Plan{}
-			plan.Requires = append(plan.Requires, buildplan.Required{Name: Dependency})
+			plan := buildpackplan.Plan{Name: Dependency}
 
+			//f.AddPlan(Dependency, buildpackplan.Dependency{})
+			f.Plans.Entries = append(f.Plans.Entries, plan)
 			f.AddDependency(Dependency, ".")
 
 			err := b.Build(f.Build)
