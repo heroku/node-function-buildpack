@@ -25,12 +25,12 @@ import (
 
 	"github.com/buildpack/libbuildpack/application"
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/cloudfoundry/libcfbuildpack/helper"
+	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/node-engine-cnb/node"
 	"github.com/heroku/libfnbuildpack/function"
-	"github.com/heroku/libhkbuildpack/build"
-	"github.com/heroku/libhkbuildpack/detect"
-	"github.com/heroku/libhkbuildpack/helper"
-	"github.com/heroku/libhkbuildpack/layers"
 )
 
 const (
@@ -63,21 +63,22 @@ type RiffNodeInvoker struct {
 	functionLayer layers.Layer
 }
 
-func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.BuildPlan {
-	n := d.BuildPlan[node.Dependency]
-	if n.Metadata == nil {
-		n.Metadata = buildplan.Metadata{}
-	}
-	n.Metadata["launch"] = true
-	n.Metadata["build"] = true
-
-	r := d.BuildPlan[Dependency]
-	if r.Metadata == nil {
-		r.Metadata = buildplan.Metadata{}
-	}
-	r.Metadata[FunctionArtifact] = m.Artifact
-
-	return buildplan.BuildPlan{node.Dependency: n, Dependency: r}
+func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.Plan {
+	//n := d.BuildPlan[node.Dependency]
+	//if n.Metadata == nil {
+	//	n.Metadata = buildplan.Metadata{}
+	//}
+	//n.Metadata["launch"] = true
+	//n.Metadata["build"] = true
+	//
+	//r := d.BuildPlan[Dependency]
+	//if r.Metadata == nil {
+	//	r.Metadata = buildplan.Metadata{}
+	//}
+	//r.Metadata[FunctionArtifact] = m.Artifact
+	//
+	//return buildplan.BuildPlan{node.Dependency: n, Dependency: r}
+	return buildplan.Plan{}
 }
 
 // Contribute expands the node invoker tgz and creates launch configurations that run "node server.js"

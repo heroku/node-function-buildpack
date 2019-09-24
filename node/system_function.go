@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/heroku/libhkbuildpack/layers"
+	"github.com/cloudfoundry/libcfbuildpack/layers"
 )
 
 type SystemFunction struct {

@@ -23,9 +23,9 @@ import (
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/libcfbuildpack/test"
 	nodeCNB "github.com/cloudfoundry/node-engine-cnb/node"
 	"github.com/heroku/libfnbuildpack/function"
-	"github.com/heroku/libhkbuildpack/test"
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -190,7 +190,9 @@ func TestBuild(t *testing.T) {
 		})
 
 		it.Pend("will build if passed detection", func() {
-			f.AddBuildPlan(Dependency, buildplan.Dependency{})
+			plan := buildplan.Plan{}
+			plan.Requires = append(plan.Requires, buildplan.Required{Name: Dependency})
+
 			f.AddDependency(Dependency, ".")
 
 			err := b.Build(f.Build)

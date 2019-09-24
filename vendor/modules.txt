@@ -1,8 +1,8 @@
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
-# github.com/Masterminds/semver v1.4.2
+# github.com/Masterminds/semver v1.5.0
 github.com/Masterminds/semver
-# github.com/buildpack/libbuildpack v1.18.0
+# github.com/buildpack/libbuildpack v1.24.3
 github.com/buildpack/libbuildpack/application
 github.com/buildpack/libbuildpack/buildplan
 github.com/buildpack/libbuildpack/internal
@@ -10,16 +10,19 @@ github.com/buildpack/libbuildpack/logger
 github.com/buildpack/libbuildpack/build
 github.com/buildpack/libbuildpack/layers
 github.com/buildpack/libbuildpack/detect
+github.com/buildpack/libbuildpack/buildpackplan
 github.com/buildpack/libbuildpack/buildpack
 github.com/buildpack/libbuildpack/platform
 github.com/buildpack/libbuildpack/services
 github.com/buildpack/libbuildpack/stack
-# github.com/cloudfoundry/libcfbuildpack v1.62.0
+# github.com/cloudfoundry/libcfbuildpack v1.87.2
 github.com/cloudfoundry/libcfbuildpack/build
+github.com/cloudfoundry/libcfbuildpack/detect
 github.com/cloudfoundry/libcfbuildpack/helper
 github.com/cloudfoundry/libcfbuildpack/layers
-github.com/cloudfoundry/libcfbuildpack/buildpack
+github.com/cloudfoundry/libcfbuildpack/buildpackplan
 github.com/cloudfoundry/libcfbuildpack/logger
+github.com/cloudfoundry/libcfbuildpack/buildpack
 github.com/cloudfoundry/libcfbuildpack/runner
 github.com/cloudfoundry/libcfbuildpack/services
 github.com/cloudfoundry/libcfbuildpack/internal
@@ -29,26 +32,26 @@ github.com/cloudfoundry/node-engine-cnb/node
 github.com/cloudfoundry/npm-cnb/modules
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/heroku/libfnbuildpack v0.3.0
+# github.com/heroku/libfnbuildpack v0.3.1-0.20190924205828-6a2b3fa57774
 github.com/heroku/libfnbuildpack/function
 # github.com/heroku/libhkbuildpack v0.0.1
+github.com/heroku/libhkbuildpack/layers
+github.com/heroku/libhkbuildpack/buildpack
+github.com/heroku/libhkbuildpack/helper
+github.com/heroku/libhkbuildpack/internal
+github.com/heroku/libhkbuildpack/logger
+github.com/heroku/libhkbuildpack/test
 github.com/heroku/libhkbuildpack/build
 github.com/heroku/libhkbuildpack/detect
-github.com/heroku/libhkbuildpack/helper
-github.com/heroku/libhkbuildpack/layers
-github.com/heroku/libhkbuildpack/logger
-github.com/heroku/libhkbuildpack/buildpack
-github.com/heroku/libhkbuildpack/runner
 github.com/heroku/libhkbuildpack/services
-github.com/heroku/libhkbuildpack/internal
-github.com/heroku/libhkbuildpack/test
+github.com/heroku/libhkbuildpack/runner
 # github.com/mattn/go-colorable v0.1.2
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.8
+# github.com/mattn/go-isatty v0.0.9
 github.com/mattn/go-isatty
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
-# github.com/onsi/gomega v1.5.0
+# github.com/onsi/gomega v1.7.0
 github.com/onsi/gomega
 github.com/onsi/gomega/types
 github.com/onsi/gomega/internal/assertion
@@ -66,11 +69,11 @@ github.com/sclevine/spec
 github.com/sclevine/spec/report
 # github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 github.com/xi2/xz
-# golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+# golang.org/x/net v0.0.0-20190916140828-c8589233b77d
 golang.org/x/net/html/charset
 golang.org/x/net/html
 golang.org/x/net/html/atom
-# golang.org/x/sys v0.0.0-20190529164535-6a60838ec259
+# golang.org/x/sys v0.0.0-20190916202348-b4ddaad3f8a3
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.2
 golang.org/x/text/encoding

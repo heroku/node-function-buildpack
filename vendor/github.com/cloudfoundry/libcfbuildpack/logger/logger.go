@@ -18,25 +18,37 @@ package logger
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/fatih/color"
 )
 
-const indent = "      "
+const (
+	BodyIndent   = "    "
+	HeaderIndent = "  "
+
+	indent = "      "
+)
 
 var (
-	error     string
-	firstLine string
-	warning   string
+	descriptionColor = color.New(color.FgBlue)
+	error            = color.New(color.FgRed, color.Bold)
+	lines            = regexp.MustCompile(`(?m)^`)
+	nameColor        = color.New(color.FgBlue, color.Bold)
+	warning          = color.New(color.FgYellow, color.Bold)
+
+	errorEyeCatcher     string
+	firstLineEyeCatcher string
+	warningEyeCatcher   string
 )
 
 func init() {
 	color.NoColor = false
-	error = color.New(color.FgRed, color.Bold).Sprint("----->")
-	firstLine = color.New(color.FgRed, color.Bold).Sprint("----->")
-	warning = color.New(color.FgYellow, color.Bold).Sprint("----->")
+	errorEyeCatcher = error.Sprint("----->")
+	firstLineEyeCatcher = color.New(color.FgRed, color.Bold).Sprint("----->")
+	warningEyeCatcher = warning.Sprint("----->")
 }
 
 // Logger is an extension to libbuildpack.Logger to add additional functionality.
@@ -44,45 +56,134 @@ type Logger struct {
 	logger.Logger
 }
 
-// Error prints the log message with the error eye catcher.
-func (l Logger) Error(format string, args ...interface{}) {
+// Title prints the log message flush left, with an empty line above it.
+func (l Logger) Title(v Identifiable) {
 	if !l.IsInfoEnabled() {
 		return
 	}
 
-	l.Info("%s %s", error, fmt.Sprintf(format, args...))
+	l.Info("\n%s", l.prettyIdentity(v))
 }
 
-// FirstLine prints the log messages with the first line eye catcher.
-func (l Logger) FirstLine(format string, args ...interface{}) {
+// Header prints the log message indented two spaces, with an empty line above it.
+func (l Logger) Header(format string, args ...interface{}) {
 	if !l.IsInfoEnabled() {
 		return
 	}
 
-	l.Info("%s %s", firstLine, fmt.Sprintf(format, args...))
+	l.Info("%s%s", HeaderIndent, fmt.Sprintf(format, args...))
+}
+
+// HeaderError prints the log message colored red and bold, indented two spaces, with an empty line above it.
+func (l Logger) HeaderError(format string, args ...interface{}) {
+	if !l.IsInfoEnabled() {
+		return
+	}
+
+	l.Header(error.Sprintf(format, args...))
+}
+
+// HeaderWarning prints the log message colored yellow and bold, indented two spaces, with an empty line above it.
+func (l Logger) HeaderWarning(format string, args ...interface{}) {
+	if !l.IsInfoEnabled() {
+		return
+	}
+
+	l.Header(warning.Sprintf(format, args...))
+}
+
+// Body prints the log message with each line indented four spaces.
+func (l Logger) Body(format string, args ...interface{}) {
+	if !l.IsInfoEnabled() {
+		return
+	}
+
+	l.Info(color.New(color.Faint).Sprint(
+		strings.ReplaceAll(
+			l.BodyIndent(format, args...),
+			fmt.Sprintf("\x1b[%dm", color.Reset),
+			fmt.Sprintf("\x1b[%dm\x1b[%dm", color.Reset, color.Faint))))
+}
+
+// BodyError prints the log message colored red and bold with each line indented four spaces.
+func (l Logger) BodyError(format string, args ...interface{}) {
+	if !l.IsInfoEnabled() {
+		return
+	}
+
+	l.Body(error.Sprintf(format, args...))
+}
+
+// BodyIndent indents each line of a log message to the BodyIndent offset.
+func (l Logger) BodyIndent(format string, args ...interface{}) string {
+	return lines.ReplaceAllString(fmt.Sprintf(format, args...), BodyIndent)
+}
+
+// BodyWarning prints the log message colored yellow and bold with each line indented four spaces.
+func (l Logger) BodyWarning(format string, args ...interface{}) {
+	if !l.IsInfoEnabled() {
+		return
+	}
+
+	l.Body(warning.Sprintf(format, args...))
+}
+
+func (l Logger) prettyIdentity(v Identifiable) string {
+	if v == nil {
+		return ""
+	}
+
+	name, description := v.Identity()
+
+	if description == "" {
+		return nameColor.Sprint(name)
+	}
+
+	return fmt.Sprintf("%s %s", nameColor.Sprint(name), descriptionColor.Sprint(description))
 }
 
 // PrettyIdentity formats a standard pretty identity of a type.
+//
+// Deprecated: Use Title
 func (l Logger) PrettyIdentity(v Identifiable) string {
 	if v == nil {
 		return ""
 	}
 
-	var sb strings.Builder
-
 	name, description := v.Identity()
 
-	_, _ = sb.WriteString(color.New(color.FgBlue, color.Bold).Sprint(name))
-
-	if description != "" {
-		_, _ = sb.WriteString(" ")
-		_, _ = sb.WriteString(color.BlueString(description))
+	if description == "" {
+		return nameColor.Sprint(name)
 	}
 
-	return sb.String()
+	return fmt.Sprintf("%s %s", nameColor.Sprint(name), descriptionColor.Sprint(description))
+}
+
+// Error prints the log message with the error eye catcher.
+//
+// Deprecated: Use HeaderError or BodyError
+func (l Logger) Error(format string, args ...interface{}) {
+	if !l.IsInfoEnabled() {
+		return
+	}
+
+	l.Info("%s %s", errorEyeCatcher, fmt.Sprintf(format, args...))
+}
+
+// FirstLine prints the log messages with the first line eye catcher.
+//
+// Deprecated: Use Title
+func (l Logger) FirstLine(format string, args ...interface{}) {
+	if !l.IsInfoEnabled() {
+		return
+	}
+
+	l.Info("%s %s", firstLineEyeCatcher, fmt.Sprintf(format, args...))
 }
 
 // SubsequentLine prints log message with the subsequent line indent.
+//
+// Deprecated: Use Body
 func (l Logger) SubsequentLine(format string, args ...interface{}) {
 	if !l.IsInfoEnabled() {
 		return
@@ -92,10 +193,12 @@ func (l Logger) SubsequentLine(format string, args ...interface{}) {
 }
 
 // Warning prints the log message with the warning eye catcher.
+//
+// Deprecated: Use HeaderWarning or BodyWarning
 func (l Logger) Warning(format string, args ...interface{}) {
 	if !l.IsInfoEnabled() {
 		return
 	}
 
-	l.Info("%s %s", warning, fmt.Sprintf(format, args...))
+	l.Info("%s %s", warningEyeCatcher, fmt.Sprintf(format, args...))
 }

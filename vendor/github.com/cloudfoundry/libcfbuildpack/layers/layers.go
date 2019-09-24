@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/buildpack/libbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/buildpack"
+	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/logger"
 	"github.com/fatih/color"
 )
@@ -31,8 +31,8 @@ import (
 type Layers struct {
 	layers.Layers
 
-	// DependencyBuildPlans contains all contributed dependencies.
-	DependencyBuildPlans buildplan.BuildPlan
+	// Plans contains all contributed dependencies.
+	Plans *buildpackplan.Plans
 
 	// TouchedLayers registers the layers that have been touched during this execution.
 	TouchedLayers TouchedLayers
@@ -44,12 +44,17 @@ type Layers struct {
 
 // DependencyLayer returns a DependencyLayer unique to a dependency.
 func (l Layers) DependencyLayer(dependency buildpack.Dependency) DependencyLayer {
+	return l.DependencyLayerWithID(dependency.ID, dependency)
+}
+
+// DependencyLayerWithID returns a DependencyLayer unique to a dependency with an explicit id.
+func (l Layers) DependencyLayerWithID(id string, dependency buildpack.Dependency) DependencyLayer {
 	return DependencyLayer{
-		l.Layer(dependency.ID),
+		l.Layer(id),
 		dependency,
-		l.DependencyBuildPlans,
 		l.DownloadLayer(dependency),
 		l.logger,
+		l.Plans,
 	}
 }
 
@@ -70,9 +75,9 @@ func (l Layers) HelperLayer(id string, name string) HelperLayer {
 		l.Layer(id),
 		id,
 		l.buildpack,
-		l.DependencyBuildPlans,
-		name,
 		l.logger,
+		name,
+		l.Plans,
 	}
 }
 
@@ -81,14 +86,31 @@ func (l Layers) Layer(name string) Layer {
 	return Layer{l.Layers.Layer(name), l.logger, l.TouchedLayers}
 }
 
+// MultiDependencyLayer returns a MultiDependencyLayer unique to a collection of dependencies.
+func (l Layers) MultiDependencyLayer(id string, dependencies ...buildpack.Dependency) MultiDependencyLayer {
+	dl := make(map[string]DownloadLayer, len(dependencies))
+
+	for _, d := range dependencies {
+		dl[d.ID] = l.DownloadLayer(d)
+	}
+
+	return MultiDependencyLayer{
+		l.Layer(id),
+		dependencies,
+		dl,
+		l.logger,
+		l.Plans,
+	}
+}
+
 // WriteApplicationMetadata writes application metadata to the filesystem.
 func (l Layers) WriteApplicationMetadata(metadata Metadata) error {
 	if len(metadata.Slices) > 0 {
-		l.logger.FirstLine("%d application slices", len(metadata.Slices))
+		l.logger.Header("%d application slices", len(metadata.Slices))
 	}
 
 	if len(metadata.Processes) > 0 {
-		l.logger.FirstLine("Process types:")
+		l.logger.Header("Process types:")
 
 		p := metadata.Processes
 		sort.Slice(p, func(i int, j int) bool {
@@ -97,8 +119,8 @@ func (l Layers) WriteApplicationMetadata(metadata Metadata) error {
 
 		max := l.maximumTypeLength(p)
 		for _, p := range p {
-			format := fmt.Sprintf("%%s:%%-%ds %%s", max-len(p.Type))
-			l.logger.SubsequentLine(format, color.CyanString(p.Type), "", p.Command)
+			format := fmt.Sprintf("%%s%%s:%%-%ds %%s", max-len(p.Type))
+			l.logger.Info(format, logger.BodyIndent, color.CyanString(p.Type), "", p.Command)
 		}
 	}
 
@@ -107,7 +129,7 @@ func (l Layers) WriteApplicationMetadata(metadata Metadata) error {
 
 // WritePersistentMetadata writes persistent metadata to the filesystem.
 func (l Layers) WritePersistentMetadata(metadata interface{}) error {
-	l.logger.SubsequentLine("Writing persistent metadata")
+	l.logger.Body("Writing persistent metadata")
 	return l.Layers.WritePersistentMetadata(metadata)
 }
 
@@ -126,11 +148,11 @@ func (l Layers) maximumTypeLength(processes Processes) int {
 // NewLayers creates a new instance of Layers.
 func NewLayers(layers layers.Layers, buildpackCache layers.Layers, buildpack buildpack.Buildpack, logger logger.Logger) Layers {
 	return Layers{
-		Layers:               layers,
-		DependencyBuildPlans: make(buildplan.BuildPlan),
-		TouchedLayers:        NewTouchedLayers(layers.Root, logger),
-		buildpack:            buildpack,
-		buildpackCache:       buildpackCache,
-		logger:               logger,
+		Layers:         layers,
+		Plans:          &buildpackplan.Plans{},
+		TouchedLayers:  NewTouchedLayers(layers.Root, logger),
+		buildpack:      buildpack,
+		buildpackCache: buildpackCache,
+		logger:         logger,
 	}
 }

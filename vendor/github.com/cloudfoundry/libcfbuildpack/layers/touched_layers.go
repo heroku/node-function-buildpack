@@ -58,10 +58,10 @@ func (t TouchedLayers) Cleanup() error {
 		return nil
 	}
 
-	t.logger.FirstLine("%s unused layers", color.YellowString("Removing"))
+	t.logger.Header("%s unused layers", color.YellowString("Removing"))
 	for r := range remove.Iterator() {
 		f := r.(string)
-		t.logger.SubsequentLine(strings.TrimSuffix(filepath.Base(f), ".toml"))
+		t.logger.Body(strings.TrimSuffix(filepath.Base(f), ".toml"))
 
 		if err := os.RemoveAll(f); err != nil {
 			return err
@@ -79,11 +79,10 @@ func (t TouchedLayers) candidates() (internal.Set, error) {
 
 	candidates := internal.NewSet()
 
-	app := filepath.Join(t.Root, "app.toml")
-	launch := filepath.Join(t.Root, "launch.toml") // TODO: Remove once launch.toml removed from lifecycle
+	launch := filepath.Join(t.Root, "launch.toml")
 	store := filepath.Join(t.Root, "store.toml")
 	for _, f := range files {
-		if f != app && f != launch && f != store {
+		if f != launch && f != store {
 			candidates.Add(f)
 		}
 	}

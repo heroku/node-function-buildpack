@@ -17,30 +17,27 @@
 package helper
 
 import (
+	"os"
+
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
-
-type BuildpackYaml map[string] struct {
-		Version string `yaml:"version"`
-}
-
-
-func ReadBuildpackYamlVersion(buildpackYAMLPath, language string) (string, error) {
-	buf, err := ioutil.ReadFile(buildpackYAMLPath)
+func ReadBuildpackYaml(buildpackYAMLPath string, config interface{}) error {
+	f, err := os.Open(buildpackYAMLPath)
 	if err != nil {
-		return "", err
+		return err
+	}
+	fi, err := os.Stat(buildpackYAMLPath)
+	if err != nil {
+		return err
 	}
 
-	config := BuildpackYaml{}
-	if err := yaml.Unmarshal(buf, &config); err != nil {
-		return "", err
+	size := fi.Size()
+	if size == 0 {
+		return nil
 	}
 
-	lang, ok := config[language]
-	if !ok {
-		return "", nil
-	}
-	return lang.Version, nil
+	dec := yaml.NewDecoder(f)
+
+	return dec.Decode(config)
 }

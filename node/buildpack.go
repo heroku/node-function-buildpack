@@ -23,10 +23,10 @@ import (
 	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/npm-cnb/modules"
 	"github.com/heroku/libfnbuildpack/function"
-	"github.com/heroku/libhkbuildpack/build"
-	"github.com/heroku/libhkbuildpack/detect"
 )
 
 type NodeBuildpack struct {
