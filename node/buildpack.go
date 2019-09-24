@@ -37,7 +37,7 @@ func (bp *NodeBuildpack) Id() string {
 	return bp.id
 }
 
-func (bp *NodeBuildpack) Detect(d detect.Detect, m function.Metadata) (*buildplan.BuildPlan, error) {
+func (bp *NodeBuildpack) Detect(d detect.Detect, m function.Metadata) (*buildplan.Plan, error) {
 	if detected, err := bp.detect(d); err != nil {
 		return nil, err
 	} else if detected {
@@ -50,9 +50,17 @@ func (bp *NodeBuildpack) Detect(d detect.Detect, m function.Metadata) (*buildpla
 
 func (*NodeBuildpack) detect(d detect.Detect) (bool, error) {
 	// Try npm
-	if _, ok := d.BuildPlan[modules.Dependency]; ok {
-		return true, nil
+	dependencies, _ := d.Buildpack.Dependencies()
+	for _, dep := range dependencies {
+		if dep.Name == modules.Dependency {
+			return true, nil
+		}
 	}
+
+	//if _, ok := d.BuildPlan[modules.Dependency]; ok {
+	//	return true, nil
+	//}
+
 	// Try node
 	return DetectNode(d)
 }
