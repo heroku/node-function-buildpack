@@ -25,7 +25,6 @@ import (
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/npm-cnb/modules"
 	"github.com/heroku/libfnbuildpack/function"
 )
 
@@ -50,12 +49,12 @@ func (bp *NodeBuildpack) Detect(d detect.Detect, m function.Metadata) (*buildpla
 
 func (*NodeBuildpack) detect(d detect.Detect) (bool, error) {
 	// Try npm
-	dependencies, _ := d.Buildpack.Dependencies()
-	for _, dep := range dependencies {
-		if dep.Name == modules.Dependency {
-			return true, nil
-		}
-	}
+	//dependencies, _ := d.Buildpack.Dependencies()
+	//for _, dep := range dependencies {
+	//	if dep.Name == modules.Dependency {
+	//		return true, nil
+	//	}
+	//}
 
 	//if _, ok := d.BuildPlan[modules.Dependency]; ok {
 	//	return true, nil
