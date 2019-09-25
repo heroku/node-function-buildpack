@@ -63,36 +63,7 @@ type RiffNodeInvoker struct {
 }
 
 func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.Plan {
-    //nodeMetadata := buildplan.Metadata{}
-    //nodeMetadata["launch"] = true
-    //nodeMetadata["build"] = true
-    //
-    //dependencyMetadata := buildplan.Metadata{}
-    //dependencyMetadata[FunctionArtifact] = ""
-
-    bplan := buildplan.Plan{}
-    //bplan.Requires = append(
-    //	bplan.Requires,
-    //buildplan.Required{Name: node.Dependency, Metadata: nodeMetadata},
-    //buildplan.Required{Name: Dependency, Metadata: dependencyMetadata})
-
-    //-------- OLD CODE ----------
-
-    //n := d.BuildPlan[node.Dependency]
-    //if n.Metadata == nil {
-    //	n.Metadata = buildplan.Metadata{}
-    //}
-    //n.Metadata["launch"] = true
-    //n.Metadata["build"] = true
-    //
-    //r := d.BuildPlan[Dependency]
-    //if r.Metadata == nil {
-    //	r.Metadata = buildplan.Metadata{}
-    //}
-    //r.Metadata[FunctionArtifact] = m.Artifact
-    //
-    //return buildplan.BuildPlan{node.Dependency: n, Dependency: r}
-    return bplan
+    return buildplan.Plan{}
 }
 
 // Contribute expands the node invoker tgz and creates launch configurations that run "node server.js"
@@ -133,10 +104,6 @@ func (r RiffNodeInvoker) Contribute() error {
 }
 
 func NewNodeInvoker(build build.Build) (RiffNodeInvoker, bool, error) {
-    //bp, ok := build.BuildPlan[Dependency]
-    //if !ok {
-    //	return RiffNodeInvoker{}, false, nil
-    //}
     deps, err := build.Buildpack.Dependencies()
     if err != nil {
         return RiffNodeInvoker{}, false, err

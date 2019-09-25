@@ -28,10 +28,10 @@ import (
 )
 
 const (
-	Error_Initialize          = 101
-	Error_DetectReadMetadata  = 102
-	Error_DetectInternalError = 103
-	Error_BuildInternalError  = 104
+	ErrorInitialize          = 101
+	ErrorDetectReadMetadata  = 102
+	ErrorDetectInternalError = 103
+	ErrorBuildInternalError  = 104
 )
 
 type Buildpack interface {
@@ -44,13 +44,8 @@ func Detect(bp Buildpack) {
 	d, err := detect.DefaultDetect()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Detect: %s\n", err)
-		os.Exit(Error_Initialize)
+		os.Exit(ErrorInitialize)
 	}
-
-	//if err := d.BuildPlan.Init(); err != nil {
-	//	_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Build Plan: %s\n", err)
-	//	os.Exit(Error_Initialize)
-	//}
 
 	if code, err := doDetect(bp, d); err != nil {
 		d.Logger.Info(err.Error())
@@ -63,7 +58,7 @@ func Detect(bp Buildpack) {
 func doDetect(bp Buildpack, d detect.Detect) (int, error) {
 	m, ok, err := NewMetadata(d.Application, d.Logger)
 	if err != nil {
-		return d.Error(Error_DetectReadMetadata), fmt.Errorf("unable to read riff metadata: %s", err.Error())
+		return d.Error(ErrorDetectReadMetadata), fmt.Errorf("unable to read riff metadata: %s", err.Error())
 	}
 
 	if !ok {
@@ -78,7 +73,7 @@ func doDetect(bp Buildpack, d detect.Detect) (int, error) {
 	plan, err := bp.Detect(d, m)
 	if err != nil {
 		d.Logger.Info("Error trying to use %s invoker: %s", bp.Id(), err.Error())
-		return d.Error(Error_DetectInternalError), nil
+		return d.Error(ErrorDetectInternalError), nil
 	}
 	if plan == nil {
 		if m.Override == "" {
@@ -87,7 +82,7 @@ func doDetect(bp Buildpack, d detect.Detect) (int, error) {
 		}
 		// expected to detect, but didn't
 		d.Logger.Info("Unable to detect invoker: %s", bp.Id())
-		return d.Error(Error_DetectInternalError), nil
+		return d.Error(ErrorDetectInternalError), nil
 	}
 
 	d.Logger.Debug("Detected language: %q.", bp.Id())
@@ -98,7 +93,7 @@ func Build(bp Buildpack) {
 	b, err := build.DefaultBuild()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Build: %s\n", err)
-		os.Exit(Error_Initialize)
+		os.Exit(ErrorInitialize)
 	}
 
 	if code, err := doBuild(bp, b); err != nil {
@@ -110,10 +105,10 @@ func Build(bp Buildpack) {
 }
 
 func doBuild(bp Buildpack, b build.Build) (int, error) {
-	b.Logger.FirstLine(b.Logger.PrettyIdentity(b.Buildpack))
+	b.Logger.Title(b.Buildpack)
 
 	if err := bp.Build(b); err != nil {
-		return b.Failure(Error_BuildInternalError), fmt.Errorf("unable to build invoker %q: %s", bp.Id(), err)
+		return b.Failure(ErrorBuildInternalError), fmt.Errorf("unable to build invoker %q: %s", bp.Id(), err)
 	}
 	return b.Success(buildpackplan.Plan{})
 }

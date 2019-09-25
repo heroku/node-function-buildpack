@@ -26,25 +26,10 @@ github.com/cloudfoundry/libcfbuildpack/buildpack
 github.com/cloudfoundry/libcfbuildpack/runner
 github.com/cloudfoundry/libcfbuildpack/services
 github.com/cloudfoundry/libcfbuildpack/internal
-# github.com/cloudfoundry/node-engine-cnb v0.0.12
-github.com/cloudfoundry/node-engine-cnb/node
-# github.com/cloudfoundry/npm-cnb v0.0.8
-github.com/cloudfoundry/npm-cnb/modules
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/heroku/libfnbuildpack v0.3.1-0.20190924205828-6a2b3fa57774
+# github.com/heroku/libfnbuildpack v0.4.0
 github.com/heroku/libfnbuildpack/function
-# github.com/heroku/libhkbuildpack v0.0.1
-github.com/heroku/libhkbuildpack/layers
-github.com/heroku/libhkbuildpack/buildpack
-github.com/heroku/libhkbuildpack/helper
-github.com/heroku/libhkbuildpack/internal
-github.com/heroku/libhkbuildpack/logger
-github.com/heroku/libhkbuildpack/test
-github.com/heroku/libhkbuildpack/build
-github.com/heroku/libhkbuildpack/detect
-github.com/heroku/libhkbuildpack/services
-github.com/heroku/libhkbuildpack/runner
 # github.com/mattn/go-colorable v0.1.2
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.9
