@@ -63,38 +63,18 @@ type RiffNodeInvoker struct {
 }
 
 func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.Plan {
-    // THOUGHTS:
-    //Looks like we have 2 build plans here.
-    //1) node.Dependency
-    //  - has nodeMetadata
-    //2) Dependency
-    //  - has nodeMetadata
+    //nodeMetadata := buildplan.Metadata{}
+    //nodeMetadata["launch"] = true
+    //nodeMetadata["build"] = true
     //
-    //How does this translate to the new way??
-    //- One buildplan, but with 2 requires (each with their own meta data)
-    //dependencies, _ := d.Buildpack.Dependencies()
-    //
-    //d.
-    //buildpack.Dependencies{}
-    //for _, dep := range dependencies {
-    //	if dep.Name == modules.Dependency {
-    //		dep.
-    //		return true, nil
-    //	}
-    ////}
-    nodeMetadata := buildplan.Metadata{}
-    nodeMetadata["launch"] = true
-    nodeMetadata["build"] = true
-
-    dependencyMetadata := buildplan.Metadata{}
-    dependencyMetadata[FunctionArtifact] = ""
-
+    //dependencyMetadata := buildplan.Metadata{}
+    //dependencyMetadata[FunctionArtifact] = ""
 
     bplan := buildplan.Plan{}
     //bplan.Requires = append(
     //	bplan.Requires,
-    //	//buildplan.Required{Name: node.Dependency, Metadata: nodeMetadata},
-    //	buildplan.Required{Name: Dependency, Metadata: dependencyMetadata})
+    //buildplan.Required{Name: node.Dependency, Metadata: nodeMetadata},
+    //buildplan.Required{Name: Dependency, Metadata: dependencyMetadata})
 
     //-------- OLD CODE ----------
 
@@ -157,10 +137,6 @@ func NewNodeInvoker(build build.Build) (RiffNodeInvoker, bool, error) {
     //if !ok {
     //	return RiffNodeInvoker{}, false, nil
     //}
-    plans := build.Plans
-    nodePlan := plans.Get(Dependency)
-    fmt.Println(fmt.Sprintf("nodePlan ===== %v", nodePlan))
-
     deps, err := build.Buildpack.Dependencies()
     if err != nil {
         return RiffNodeInvoker{}, false, err
@@ -173,9 +149,10 @@ func NewNodeInvoker(build build.Build) (RiffNodeInvoker, bool, error) {
         return RiffNodeInvoker{}, false, err
     }
 
+    bp.Metadata[FunctionArtifact] = ""
     functionJS, ok := bp.Metadata[FunctionArtifact].(string)
     if !ok {
-        return RiffNodeInvoker{}, false, fmt.Errorf("node metadata of incorrect type: %v", bp.Metadata[FunctionArtifact])
+       return RiffNodeInvoker{}, false, fmt.Errorf("node metadata of incorrect type: %v", bp.Metadata[FunctionArtifact])
     }
 
     return RiffNodeInvoker{
