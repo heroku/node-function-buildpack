@@ -26,7 +26,11 @@ function getFunction(uri) {
 const middlewareFns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
 const userFn = getFunction(USER_FUNCTION_URI);
 
-module.exports = async ({headers, payload}) => {
+module.exports = async (message) => {
+  const payload = message.payload;
+  // Remap headers to a standard JS object
+  const headers = message.headers.toRiffHeaders();
+  Object.keys(headers).map((key) => {headers[key] = message.headers.getValue(key)});
   if (DEBUG) {
     console.log('==System Function Start==');
     console.log(`HEADERS: ${JSON.stringify(headers)}`);
