@@ -19,26 +19,24 @@ package function
 
 import (
 	"fmt"
+	"github.com/buildpack/libbuildpack/buildplan"
 	"os"
 
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/heroku/libhkbuildpack/build"
-	"github.com/heroku/libhkbuildpack/detect"
+	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
+	"github.com/cloudfoundry/libcfbuildpack/detect"
 )
 
 const (
-	Error_Initialize          = 101
-	Error_DetectReadMetadata  = 102
-	Error_DetectedNone        = 103
-	Error_DetectAmbiguity     = 104
-	Error_UnsupportedLanguage = 105
-	Error_DetectInternalError = 106
-	Error_BuildInternalError  = 102
+	ErrorInitialize          = 101
+	ErrorDetectReadMetadata  = 102
+	ErrorDetectInternalError = 103
+	ErrorBuildInternalError  = 104
 )
 
 type Buildpack interface {
 	Id() string
-	Detect(detect detect.Detect, metadata Metadata) (*buildplan.BuildPlan, error)
+	Detect(detect detect.Detect, metadata Metadata) (*buildplan.Plan, error)
 	Build(build build.Build) error
 }
 
@@ -46,12 +44,7 @@ func Detect(bp Buildpack) {
 	d, err := detect.DefaultDetect()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Detect: %s\n", err)
-		os.Exit(Error_Initialize)
-	}
-
-	if err := d.BuildPlan.Init(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Build Plan: %s\n", err)
-		os.Exit(Error_Initialize)
+		os.Exit(ErrorInitialize)
 	}
 
 	if code, err := doDetect(bp, d); err != nil {
@@ -65,7 +58,7 @@ func Detect(bp Buildpack) {
 func doDetect(bp Buildpack, d detect.Detect) (int, error) {
 	m, ok, err := NewMetadata(d.Application, d.Logger)
 	if err != nil {
-		return d.Error(Error_DetectReadMetadata), fmt.Errorf("unable to read riff metadata: %s", err.Error())
+		return d.Error(ErrorDetectReadMetadata), fmt.Errorf("unable to read riff metadata: %s", err.Error())
 	}
 
 	if !ok {
@@ -80,7 +73,7 @@ func doDetect(bp Buildpack, d detect.Detect) (int, error) {
 	plan, err := bp.Detect(d, m)
 	if err != nil {
 		d.Logger.Info("Error trying to use %s invoker: %s", bp.Id(), err.Error())
-		return d.Error(Error_DetectInternalError), nil
+		return d.Error(ErrorDetectInternalError), nil
 	}
 	if plan == nil {
 		if m.Override == "" {
@@ -89,7 +82,7 @@ func doDetect(bp Buildpack, d detect.Detect) (int, error) {
 		}
 		// expected to detect, but didn't
 		d.Logger.Info("Unable to detect invoker: %s", bp.Id())
-		return d.Error(Error_DetectInternalError), nil
+		return d.Error(ErrorDetectInternalError), nil
 	}
 
 	d.Logger.Debug("Detected language: %q.", bp.Id())
@@ -100,7 +93,7 @@ func Build(bp Buildpack) {
 	b, err := build.DefaultBuild()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Build: %s\n", err)
-		os.Exit(Error_Initialize)
+		os.Exit(ErrorInitialize)
 	}
 
 	if code, err := doBuild(bp, b); err != nil {
@@ -112,10 +105,10 @@ func Build(bp Buildpack) {
 }
 
 func doBuild(bp Buildpack, b build.Build) (int, error) {
-	b.Logger.FirstLine(b.Logger.PrettyIdentity(b.Buildpack))
+	b.Logger.Title(b.Buildpack)
 
 	if err := bp.Build(b); err != nil {
-		return b.Failure(Error_BuildInternalError), fmt.Errorf("unable to build invoker %q: %s", bp.Id(), err)
+		return b.Failure(ErrorBuildInternalError), fmt.Errorf("unable to build invoker %q: %s", bp.Id(), err)
 	}
-	return b.Success(buildplan.BuildPlan{})
+	return b.Success(buildpackplan.Plan{})
 }

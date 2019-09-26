@@ -18,141 +18,124 @@
 package node
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
+    "fmt"
+    "os"
+    "os/exec"
+    "path/filepath"
 
-	"github.com/buildpack/libbuildpack/application"
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/node-engine-cnb/node"
-	"github.com/heroku/libfnbuildpack/function"
-	"github.com/heroku/libhkbuildpack/build"
-	"github.com/heroku/libhkbuildpack/detect"
-	"github.com/heroku/libhkbuildpack/helper"
-	"github.com/heroku/libhkbuildpack/layers"
+    "github.com/buildpack/libbuildpack/application"
+    "github.com/buildpack/libbuildpack/buildplan"
+    "github.com/cloudfoundry/libcfbuildpack/build"
+    "github.com/cloudfoundry/libcfbuildpack/detect"
+    "github.com/cloudfoundry/libcfbuildpack/helper"
+    "github.com/cloudfoundry/libcfbuildpack/layers"
+    "github.com/heroku/libfnbuildpack/function"
 )
 
 const (
-	// Name is a short, human friendly name for the node invoker
-	Name = "node"
+    // Name is a short, human friendly name for the node invoker
+    Name = "node"
 
-	// Dependency is a key identifying the node invoker dependency in the build plan.
-	Dependency = "riff-invoker-node"
+    // Dependency is a key identifying the node invoker dependency in the build plan.
+    Dependency = "riff-invoker-node"
 
-	// functionArtifact is a key identifying the path to the function entrypoint in the build plan.
-	FunctionArtifact = "fn"
+    // functionArtifact is a key identifying the path to the function entrypoint in the build plan.
+    FunctionArtifact = "fn"
 )
 
 // RiffNodeInvoker represents the Node invoker contributed by the buildpack.
 type RiffNodeInvoker struct {
-	// A reference to the user function source tree.
-	application application.Application
+    // A reference to the user function source tree.
+    application application.Application
 
-	// The file in the function tree that is the entrypoint.
-	// May be empty, in which case the function is require()d as a node module.
-	functionJS string
+    // The file in the function tree that is the entrypoint.
+    // May be empty, in which case the function is require()d as a node module.
+    functionJS string
 
-	// Provides access to the launch layers, used to craft the process commands.
-	layers layers.Layers
+    // Provides access to the launch layers, used to craft the process commands.
+    layers layers.Layers
 
-	// A dedicated layer for the node invoker itself. Cacheable once npm-installed
-	invokerLayer layers.DependencyLayer
+    // A dedicated layer for the node invoker itself. Cacheable once npm-installed
+    invokerLayer layers.DependencyLayer
 
-	// A dedicated layer for the function location. Not cacheable, as it changes with the value of functionJS.
-	functionLayer layers.Layer
+    // A dedicated layer for the function location. Not cacheable, as it changes with the value of functionJS.
+    functionLayer layers.Layer
 }
 
-func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.BuildPlan {
-	n := d.BuildPlan[node.Dependency]
-	if n.Metadata == nil {
-		n.Metadata = buildplan.Metadata{}
-	}
-	n.Metadata["launch"] = true
-	n.Metadata["build"] = true
-
-	r := d.BuildPlan[Dependency]
-	if r.Metadata == nil {
-		r.Metadata = buildplan.Metadata{}
-	}
-	r.Metadata[FunctionArtifact] = m.Artifact
-
-	return buildplan.BuildPlan{node.Dependency: n, Dependency: r}
+func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.Plan {
+    return buildplan.Plan{}
 }
 
 // Contribute expands the node invoker tgz and creates launch configurations that run "node server.js"
 func (r RiffNodeInvoker) Contribute() error {
-	if err := r.invokerLayer.Contribute(func(artifact string, layer layers.DependencyLayer) error {
-		layer.Logger.SubsequentLine("Expanding to %s", layer.Root)
-		if e := helper.ExtractTarGz(artifact, layer.Root, 1); e != nil {
-			return e
-		}
-		layer.Logger.SubsequentLine("npm-installing the node invoker")
-		cmd := exec.Command("npm", "install", "--production")
-		cmd.Stdout = os.Stderr
-		cmd.Stderr = os.Stderr
-		cmd.Dir = layer.Root
-		if e := cmd.Run(); e != nil {
-			return e
-		}
+    if err := r.invokerLayer.Contribute(func(artifact string, layer layers.DependencyLayer) error {
+        layer.Logger.Body("Expanding to %s", layer.Root)
+        if e := helper.ExtractTarGz(artifact, layer.Root, 1); e != nil {
+            return e
+        }
+        layer.Logger.Body("npm-installing the node invoker")
+        cmd := exec.Command("npm", "install", "--production")
+        cmd.Stdout = os.Stderr
+        cmd.Stderr = os.Stderr
+        cmd.Dir = layer.Root
+        if e := cmd.Run(); e != nil {
+            return e
+        }
 
-		return nil
-	}, layers.Launch); err != nil {
-		return err
-	}
+        return nil
+    }, layers.Launch); err != nil {
+        return err
+    }
 
-	if err := r.functionLayer.Contribute(marker{"NodeJS", r.functionJS}, func(layer layers.Layer) error {
-		return layer.OverrideLaunchEnv("USER_FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
-	}, layers.Launch); err != nil {
-		return err
-	}
+    if err := r.functionLayer.Contribute(marker{"NodeJS", r.functionJS}, func(layer layers.Layer) error {
+        return layer.OverrideLaunchEnv("USER_FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
+    }, layers.Launch); err != nil {
+        return err
+    }
 
-	command := fmt.Sprintf(`node %s/server.js`, r.invokerLayer.Root)
+    command := fmt.Sprintf(`node %s/server.js`, r.invokerLayer.Root)
 
-	return r.layers.WriteApplicationMetadata(layers.Metadata{
-		Processes: layers.Processes{
-			layers.Process{Type: "web", Command: command},
-			layers.Process{Type: "function", Command: command},
-		},
-	})
+    return r.layers.WriteApplicationMetadata(layers.Metadata{
+        Processes: layers.Processes{
+            layers.Process{Type: "web", Command: command},
+            layers.Process{Type: "function", Command: command},
+        },
+    })
 }
 
 func NewNodeInvoker(build build.Build) (RiffNodeInvoker, bool, error) {
-	bp, ok := build.BuildPlan[Dependency]
-	if !ok {
-		return RiffNodeInvoker{}, false, nil
-	}
+    deps, err := build.Buildpack.Dependencies()
+    if err != nil {
+        return RiffNodeInvoker{}, false, err
+    }
 
-	deps, err := build.Buildpack.Dependencies()
-	if err != nil {
-		return RiffNodeInvoker{}, false, err
-	}
+    bp := build.Buildpack
 
-	dep, err := deps.Best(Dependency, bp.Version, build.Stack)
-	if err != nil {
-		return RiffNodeInvoker{}, false, err
-	}
+    dep, err := deps.Best(Dependency, "0.1.3", build.Stack)
+    if err != nil {
+        return RiffNodeInvoker{}, false, err
+    }
 
-	functionJS, ok := bp.Metadata[FunctionArtifact].(string)
-	if !ok {
-		return RiffNodeInvoker{}, false, fmt.Errorf("node metadata of incorrect type: %v", bp.Metadata[FunctionArtifact])
-	}
+    bp.Metadata[FunctionArtifact] = ""
+    functionJS, ok := bp.Metadata[FunctionArtifact].(string)
+    if !ok {
+       return RiffNodeInvoker{}, false, fmt.Errorf("node metadata of incorrect type: %v", bp.Metadata[FunctionArtifact])
+    }
 
-	return RiffNodeInvoker{
-		application:   build.Application,
-		functionJS:    functionJS,
-		layers:        build.Layers,
-		invokerLayer:  build.Layers.DependencyLayer(dep),
-		functionLayer: build.Layers.Layer("function"),
-	}, true, nil
-
+    return RiffNodeInvoker{
+        application:   build.Application,
+        functionJS:    functionJS,
+        layers:        build.Layers,
+        invokerLayer:  build.Layers.DependencyLayer(dep),
+        functionLayer: build.Layers.Layer("function"),
+    }, true, nil
 }
 
 type marker struct {
-	Language string `toml:"language"`
-	Function string `toml:"function"`
+    Language string `toml:"language"`
+    Function string `toml:"function"`
 }
 
 func (m marker) Identity() (string, string) {
-	return m.Language, m.Function
+    return m.Language, m.Function
 }

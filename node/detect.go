@@ -24,7 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/heroku/libhkbuildpack/detect"
+	"github.com/cloudfoundry/libcfbuildpack/detect"
 
 	"path/filepath"
 )
