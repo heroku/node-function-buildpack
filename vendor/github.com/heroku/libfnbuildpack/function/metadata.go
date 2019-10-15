@@ -23,8 +23,8 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/buildpack/libbuildpack/application"
+	"github.com/buildpack/libbuildpack/logger"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
-	"github.com/cloudfoundry/libcfbuildpack/logger"
 )
 
 const (

@@ -24,7 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/buildpack/libbuildpack/detect"
 
 	"path/filepath"
 )

@@ -25,8 +25,8 @@ import (
 
     "github.com/buildpack/libbuildpack/application"
     "github.com/buildpack/libbuildpack/buildplan"
+    "github.com/buildpack/libbuildpack/detect"
     "github.com/cloudfoundry/libcfbuildpack/build"
-    "github.com/cloudfoundry/libcfbuildpack/detect"
     "github.com/cloudfoundry/libcfbuildpack/helper"
     "github.com/cloudfoundry/libcfbuildpack/layers"
     "github.com/heroku/libfnbuildpack/function"

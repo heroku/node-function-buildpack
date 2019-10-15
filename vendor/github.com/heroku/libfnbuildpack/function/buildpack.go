@@ -22,9 +22,9 @@ import (
 	"github.com/buildpack/libbuildpack/buildplan"
 	"os"
 
+	"github.com/buildpack/libbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
 )
 
 const (

@@ -23,8 +23,8 @@ import (
 	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/buildpack/libbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/build"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/heroku/libfnbuildpack/function"
 )
 
