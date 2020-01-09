@@ -3,7 +3,8 @@
   "version": "0.4.3",
   "description": "A buildpack to build node functions",
   "dependencies": {
-    "@projectriff/message": "^1.0.0"
+    "@projectriff/message": "^1.0.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {},
   "scripts": {

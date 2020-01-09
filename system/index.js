@@ -1,6 +1,24 @@
 const { Message } = require('@projectriff/message');
+const winston = require('winston');
 
 const { DEBUG, MIDDLEWARE_FUNCTION_URI, USER_FUNCTION_URI } = process.env;
+
+function initLogging(level, requestID) {
+  let logger = winston.createLogger({
+    level,
+    transports: [
+      new winston.transports.Console(),
+    ],
+  })
+
+  if (requestID) {
+    logger = logger.child({
+      request_id: requestID,
+    });
+  }
+
+  return logger
+}
 
 function getMiddlewareFunctions(uri) {
   const middlewareFunctions = [];
@@ -30,54 +48,77 @@ module.exports = async (message) => {
   const payload = message.payload;
   // Remap headers to a standard JS object
   const headers = message.headers.toRiffHeaders();
-  Object.keys(headers).map((key) => {headers[key] = message.headers.getValue(key)});
-  if (DEBUG) {
-    console.log('==System Function Start==');
-    console.log(`HEADERS: ${JSON.stringify(headers)}`);
-    console.log(`PAYLOAD: ${JSON.stringify(payload)}`);
-    console.log(`MIDDLEWARE_FUNCTION_URI: ${MIDDLEWARE_FUNCTION_URI}`);
-    console.log('==Middleware Function(s) Start==');
-  }
+  Object.keys(headers).map((key) => { headers[key] = message.headers.getValue(key) });
+  const requestID = headers['x-request-id']
+
+  const logLevel = DEBUG ? 'debug' : 'info';
+  const log = initLogging(logLevel, requestID);
+
+  log.debug({
+    headers: JSON.stringify(headers),
+    payload: JSON.stringify(payload),
+    middware_function_uri: MIDDLEWARE_FUNCTION_URI,
+    status: 'system function start',
+  });
+
+  log.debug({ status: 'middleware function(s) start' });
 
   const state = {};
   let middlewareResult = [payload];
 
   await Promise.all(middlewareFns.map(async (middleware) => {
-        try {
-          // input should be immutable
-          const input = {
-            payload: typeof payload == "object" ? Object.assign({}, payload) : payload,
-            headers: Object.assign({}, headers)
-          };
-          if (DEBUG) {
-            console.log(`MIDDLEWARE INPUT: ${JSON.stringify(input)}`);
-            console.log(`MIDDLEWARE STATE: ${JSON.stringify(state)}`);
-            console.log(`MIDDLEWARE RESULT: ${JSON.stringify(middlewareResult)}`);
-          }
-          middlewareResult = await middleware(input, state, middlewareResult);
-          if (DEBUG) {
-            console.log(`MIDDLEWARE RETURNED: ${JSON.stringify(middlewareResult)}`);
-          }
-          if (!Array.isArray(middlewareResult)) {
-            throw new Error('Invalid return type, middleware must return an array of arguments')
-          }
-        } catch (err) {
-          throw err
-        }
-      })
-  );
+    try {
+      // input should be immutable
+      const input = {
+        payload: typeof payload == "object" ? Object.assign({}, payload) : payload,
+        headers: Object.assign({}, headers)
+      };
 
-  if (DEBUG) {
-    console.log('==Middleware Function(s) End==');
-    console.log(`USER FUNCTION RECEIVED ARGS: ${JSON.stringify(middlewareResult)}`);
+      log.debug({
+        middleware_input: JSON.stringify(input),
+        middleware_state: JSON.stringify(state),
+        middleware_result: JSON.stringify(middlewareResult),
+      });
+
+      middlewareResult = await middleware(input, state, middlewareResult);
+
+      log.debug({
+        middleware_returned: JSON.stringify(middlewareResult),
+      });
+
+      if (!Array.isArray(middlewareResult)) {
+        throw new Error('Invalid return type, middleware must return an array of arguments')
+      }
+
+    } catch (error) {
+      log.error({ error });
+      throw error;
+    }
+  }));
+
+  log.debug({
+    status: 'middleware function(s) end',
+    user_func_args: JSON.stringify(middlewareResult),
+  });
+
+  // just use console as a placeholder for now
+  middlewareResult.concat(log);
+
+  let result;
+
+  try {
+    result = await userFn(...middlewareResult);
+
+    log.debug({
+      result,
+      status: 'system function end',
+    });
+
+  } catch (error) {
+    log.error({ error });
+    throw error;
   }
 
-  const result = await userFn(...middlewareResult);
-
-  if (DEBUG) {
-    console.log('RESULT', result);
-    console.log('==System Function End==');
-  }
   return result;
 };
 
