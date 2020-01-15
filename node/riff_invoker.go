@@ -93,7 +93,8 @@ func (r RiffNodeInvoker) Contribute() error {
         return err
     }
 
-    command := fmt.Sprintf(`node %s/server.js`, r.invokerLayer.Root)
+    nodeOptions := os.Getenv("NODE_OPTIONS")
+    command := fmt.Sprintf(`node %s %s/server.js`, nodeOptions, r.invokerLayer.Root)
 
     return r.layers.WriteApplicationMetadata(layers.Metadata{
         Processes: layers.Processes{
