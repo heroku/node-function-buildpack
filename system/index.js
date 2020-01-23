@@ -49,14 +49,12 @@ module.exports = async (message) => {
   // Remap headers to a standard JS object
   const headers = message.headers.toRiffHeaders();
   Object.keys(headers).map((key) => { headers[key] = message.headers.getValue(key) });
-  const requestID = headers['x-request-id']
 
   const logLevel = DEBUG ? 'debug' : 'info';
-  const log = initLogging(logLevel, requestID);
+  const log = initLogging(logLevel, headers['x-request-id']);
 
   log.debug({
-    headers: JSON.stringify(headers),
-    payload: JSON.stringify(payload),
+    payload_length: JSON.stringify(payload).length,
     middware_function_uri: MIDDLEWARE_FUNCTION_URI,
     status: 'system function start',
   });
@@ -101,7 +99,6 @@ module.exports = async (message) => {
     user_func_args: JSON.stringify(middlewareResult),
   });
 
-  // just use console as a placeholder for now
   middlewareResult.concat(log);
 
   let result;
