@@ -4,7 +4,7 @@
   "description": "A buildpack to build node functions",
   "dependencies": {
     "@projectriff/message": "^1.0.0",
-    "winston": "^3.2.1"
+    "@salesforce/core": "^2.1.6"
   },
   "devDependencies": {},
   "scripts": {
