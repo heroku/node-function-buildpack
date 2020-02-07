@@ -71,8 +71,6 @@ module.exports = async (message) => {
     }
   }));
 
-  middlewareResult = middlewareResult.concat(logger);
-
   let result;
   try {
     result = await userFn(...middlewareResult);
