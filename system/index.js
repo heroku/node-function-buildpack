@@ -71,7 +71,7 @@ module.exports = async (message) => {
     }
   }));
 
-  middlewareResult.concat(logger);
+  middlewareResult = middlewareResult.concat(logger);
 
   let result;
   try {
