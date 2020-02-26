@@ -18,10 +18,7 @@
 package node
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/cloudfoundry/libcfbuildpack/detect"
@@ -41,35 +38,10 @@ func DetectNode(d detect.Detect) (bool, error) {
 func validatePackageJson(applicationRoot string) error {
 	var packageJsonFile = filepath.Join(applicationRoot, "package.json")
 	if !fileExists(packageJsonFile) {
-		return errors.New("missing package.json file")
+		return errors.New("could not find a package.json file")
 	}
 
-	var data []byte
-	data, err := ioutil.ReadFile(packageJsonFile)
-	if err != nil {
-		return err
-	}
-
-	packageJson := struct {
-		Main string `json:"main"`
-	}{}
-	if err := json.Unmarshal(data, &packageJson); err != nil {
-		return err
-	}
-
-	if packageJson.Main == "" {
-		return errors.New("missing \"main\" field in package.json")
-	}
-
-	if filepath.Ext(packageJson.Main) != ".js" {
-		return errors.New("\"main\" field in package.json is not a Javascript file")
-	}
-
-	if _, err := os.Stat(filepath.Join(applicationRoot, packageJson.Main)); err == nil {
-		return nil
-	}
-
-	return errors.New(fmt.Sprintf("could not find \"%s\"", filepath.Join(applicationRoot, packageJson.Main)))
+	return nil
 }
 
 func fileExists(filename string) bool {
