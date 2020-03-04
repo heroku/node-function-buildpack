@@ -6,7 +6,7 @@ set -eo pipefail
 BP_DIR="${1:?}"
 GO_VERSION="1.12.9"
 
-go_url() {
+go_target() {
   local platform='unknown'
   local unamestr=`uname`
   if [[ "$unamestr" == 'Linux' ]]; then
@@ -15,13 +15,28 @@ go_url() {
     platform='darwin'
   fi
 
-  echo "https://dl.google.com/go/go${GO_VERSION}.${platform}-amd64.tar.gz"
+  echo "go${GO_VERSION}.${platform}-amd64.tar.gz"
+}
+
+go_url() {
+  local target_name=$(go_target)
+  echo "https://dl.google.com/go/go${target_name}"
 }
 
 install_go() {
   local go_dir="${1:?}"
   local go_tgz="$(mktemp /tmp/go.tgz.XXXXXX)"
-  curl --retry 3 -sf -o "$go_tgz" -L $(go_url)
+  local target_name=$(go_target)
+
+  local SHASUM=$(curl -s "https://golang.org/dl/?mode=json&include=all"  | jq -r ".[] | select(.version == \"go${GO_VERSION}\") | .files[] | select( .filename == \"${target_name}\" ) .sha256 ")
+  curl --retry 3 -sf -o "$go_tgz" -L "$(go_url)"
+
+  GO_TGZ_SHASUM=$(shasum -a 256 "$go_tgz")
+  if [ "$GO_TGZ_SHASUM" != "$SHASUM" ]; then
+    echo "error: shasum for ${go_tgz} doesn't match ${SHASUM}"
+    exit 1
+  fi
+
   tar -C "$go_dir" -xzf "$go_tgz"
 }
 

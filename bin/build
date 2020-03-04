@@ -12,7 +12,7 @@ status "Node Function Buildpack"
 
 BP_DIR=$(cd $(dirname $0)/..; pwd) # absolute path
 
-if [[ ! -f "$BP_DIR/bin/detect" ]] || [[ ! -f "$BP_DIR/bin/builder" ]]; then
+if [[ ! -f "$BP_DIR/bin/detector" ]] || [[ ! -f "$BP_DIR/bin/builder" ]]; then
   echo "Bootstrapping buildpack binaries"
   bash "$BP_DIR/bin/bootstrap" "$BP_DIR"
 else
