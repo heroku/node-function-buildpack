@@ -3,7 +3,8 @@ const SF = require('@salesforce/core');
 
 const { DEBUG, MIDDLEWARE_FUNCTION_URI, USER_FUNCTION_URI } = process.env;
 
-async function createLogger(level, requestID) {
+function createLogger(requestID) {
+  const level = DEBUG ? SF.LoggerLevel.DEBUG : SF.LoggerLevel.INFO;
   const logger = new SF.Logger('Evergreen Logger');
   logger.addStream({stream: process.stderr});
   logger.setLevel(level);
@@ -36,8 +37,17 @@ function getFunction(uri) {
   return mod;
 }
 
-const middlewareFns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
-const userFn = getFunction(USER_FUNCTION_URI);
+const systemLogger = createLogger();
+
+let middlewareFns;
+let userFn;
+try {
+  middlewareFns = getMiddlewareFunctions(MIDDLEWARE_FUNCTION_URI);
+  userFn = getFunction(USER_FUNCTION_URI);
+} catch (error) {
+  systemLogger.error(error.toString());
+  throw error;
+}
 
 module.exports = async (message) => {
   const payload = message.payload;
@@ -46,12 +56,11 @@ module.exports = async (message) => {
   const headers = message.headers.toRiffHeaders();
   Object.keys(headers).map((key) => { headers[key] = message.headers.getValue(key) });
 
-  const logLevel = DEBUG ? SF.LoggerLevel.DEBUG : SF.LoggerLevel.INFO;
   const requestId = headers['ce-id'] || headers['x-request-id'];
-  const logger = await createLogger(logLevel, requestId);
+  const requestLogger = createLogger(requestId);
 
   const state = {};
-  let middlewareResult = [payload, logger];
+  let middlewareResult = [payload, requestLogger];
 
   await Promise.all(middlewareFns.map(async (middleware) => {
     try {
@@ -66,7 +75,7 @@ module.exports = async (message) => {
         throw new Error('Invalid return type, middleware must return an array of arguments')
       }
     } catch (error) {
-      logger.error({error});
+      requestLogger.error(error.toString());
       throw error;
     }
   }));
@@ -75,7 +84,7 @@ module.exports = async (message) => {
   try {
     result = await userFn(...middlewareResult);
   } catch (error) {
-    logger.error({error});
+    requestLogger.error(error.toString());
     throw error;
   }
 
