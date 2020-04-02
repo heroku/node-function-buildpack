@@ -88,7 +88,9 @@ module.exports = async (message) => {
     throw error;
   }
 
-  return result;
+  if (typeof result !== 'undefined') {
+    return result
+  }
 };
 
 module.exports.$argumentType = 'message';
