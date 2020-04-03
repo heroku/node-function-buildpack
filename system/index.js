@@ -88,7 +88,9 @@ module.exports = async (message) => {
     throw error;
   }
 
-  return result;
+  //if userFn does not have explicit return, it would be undefined, when || with null, it would be null
+  //for Accept header, riff node invoker's application/json marshaller Buffer.from(JSON.stringify(null))
+  return result || null;
 };
 
 module.exports.$argumentType = 'message';
