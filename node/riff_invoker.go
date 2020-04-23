@@ -22,6 +22,8 @@ import (
     "os"
     "os/exec"
     "path/filepath"
+    "sync"
+    "time"
 
     "github.com/buildpack/libbuildpack/application"
     "github.com/buildpack/libbuildpack/buildplan"
@@ -38,9 +40,6 @@ const (
 
     // Dependency is a key identifying the node invoker dependency in the build plan.
     Dependency = "riff-invoker-node"
-
-    // functionArtifact is a key identifying the path to the function entrypoint in the build plan.
-    FunctionArtifact = "fn"
 )
 
 // RiffNodeInvoker represents the Node invoker contributed by the buildpack.
@@ -67,7 +66,15 @@ func BuildPlanContribution(d detect.Detect, m function.Metadata) buildplan.Plan 
 }
 
 // Contribute expands the node invoker tgz and creates launch configurations that run "node server.js"
-func (r RiffNodeInvoker) Contribute() error {
+func (r RiffNodeInvoker) Contribute(wg *sync.WaitGroup) error {
+    defer wg.Done()
+
+    defer func(startTime time.Time)() {
+        endTime := time.Now()
+        output := fmt.Sprintf("****** Total Execution Time Riff Invoker Contribute: %d (ms)", endTime.Sub(startTime)/time.Millisecond)
+        fmt.Println(output)
+    }(time.Now())
+
     if err := r.invokerLayer.Contribute(func(artifact string, layer layers.DependencyLayer) error {
         layer.Logger.Body("Expanding to %s", layer.Root)
         if e := helper.ExtractTarGz(artifact, layer.Root, 1); e != nil {
@@ -87,6 +94,7 @@ func (r RiffNodeInvoker) Contribute() error {
         return err
     }
 
+    // Only need to set the ENV var to point to the user function location
     if err := r.functionLayer.Contribute(marker{"NodeJS", r.functionJS}, func(layer layers.Layer) error {
         return layer.OverrideLaunchEnv("USER_FUNCTION_URI", filepath.Join(r.application.Root, r.functionJS))
     }, layers.Launch); err != nil {
@@ -109,22 +117,14 @@ func NewNodeInvoker(build build.Build) (RiffNodeInvoker, bool, error) {
         return RiffNodeInvoker{}, false, err
     }
 
-    bp := build.Buildpack
-
     dep, err := deps.Best(Dependency, "0.1.3", build.Stack)
     if err != nil {
         return RiffNodeInvoker{}, false, err
     }
 
-    bp.Metadata[FunctionArtifact] = ""
-    functionJS, ok := bp.Metadata[FunctionArtifact].(string)
-    if !ok {
-       return RiffNodeInvoker{}, false, fmt.Errorf("node metadata of incorrect type: %v", bp.Metadata[FunctionArtifact])
-    }
-
     return RiffNodeInvoker{
         application:   build.Application,
-        functionJS:    functionJS,
+        functionJS:    "",
         layers:        build.Layers,
         invokerLayer:  build.Layers.DependencyLayer(dep),
         functionLayer: build.Layers.Layer("function"),

@@ -36,6 +36,30 @@ stacks  = [ "heroku-18", "io.buildpacks.stacks.bionic" ]
   type = "Apache-2.0"
   uri  = "https://github.com/heroku/node-function-invoker/blob/master/LICENSE"
 
+[[metadata.dependencies]]
+id      = "system-function"
+name    = "heroku system function"
+version = "0.4.3"
+uri     = "https://github.com/heroku/evergreen-node-system-function/archive/v0.1-alpha.tar.gz"
+sha256  = "046c90cdaee7eb2e0ec22de1280706d3ca55b89acaec3921652728badc438e38"
+stacks  = [ "heroku-18", "io.buildpacks.stacks.bionic" ]
+
+  [[metadata.dependencies.licenses]]
+  type = "MIT"
+  uri  = "https://github.com/heroku/evergreen-node-system-function/blob/master/LICENSE"
+
+[[metadata.dependencies]]
+id      = "middleware-function"
+name    = "salesforce middleware function"
+version = "1.1.2"
+uri     = "https://github.com/forcedotcom/nodejs-sf-fx-buildpack/archive/v1.1.2.tar.gz"
+sha256  = "d1eca190bda6f2c246e9ecf58e1a9acfee81217bb101e003a6605637d9160222"
+stacks  = [ "heroku-18", "io.buildpacks.stacks.bionic" ]
+
+  [[metadata.dependencies.licenses]]
+  type = "MIT"
+  uri  = "https://github.com/forcedotcom/nodejs-sf-fx-buildpack/blob/master/README.md"
+
 [metadata]
   pre_package = "ci/build.sh"
   include_files = [

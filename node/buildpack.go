@@ -19,8 +19,7 @@ package node
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	"sync"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"
@@ -48,45 +47,47 @@ func (bp *NodeBuildpack) Detect(d detect.Detect, m function.Metadata) (*buildpla
 }
 
 func (*NodeBuildpack) detect(d detect.Detect) (bool, error) {
-	// Try npm
-	//dependencies, _ := d.Buildpack.Dependencies()
-	//for _, dep := range dependencies {
-	//	if dep.Name == modules.Dependency {
-	//		return true, nil
-	//	}
-	//}
-
-	//if _, ok := d.BuildPlan[modules.Dependency]; ok {
-	//	return true, nil
-	//}
-
-	// Try node
 	return DetectNode(d)
 }
 
 func (*NodeBuildpack) Build(b build.Build) error {
+	var wg sync.WaitGroup
+	wg.Add(3)
+
 	invoker, ok, err := NewNodeInvoker(b)
 	if err != nil {
 		return err
 	} else if !ok {
 		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
 	}
-	if err := invoker.Contribute(); err != nil {
-		return err
-	}
+	go invoker.Contribute(&wg)
+	//if err := invoker.Contribute(); err != nil {
+	//	return err
+	//}
 
-	systemLayer := b.Layers.Layer("system")
-	bpBinDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	sysFunc, ok, err := NewSystemFunction(b)
 	if err != nil {
 		return err
+	} else if !ok {
+		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
 	}
+	go sysFunc.Contribute(&wg)
+	//if err := sysFunc.Contribute(); err != nil {
+	//	return err
+	//}
 
-	bpDir := filepath.Join(bpBinDir, "../")
-	sysFunc := NewSystemFunction(systemLayer, bpDir)
-
-	if err := sysFunc.Contribute(); err != nil {
+	middlewareFunc, ok, err := NewMiddlewareFunction(b)
+	if err != nil {
 		return err
+	} else if !ok {
+		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
 	}
+	go middlewareFunc.Contribute(&wg)
+	//if err := middlewareFunc.Contribute(); err != nil {
+	//	return err
+	//}
+
+	wg.Wait()
 
 	return nil
 }

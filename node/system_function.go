@@ -2,65 +2,69 @@ package node
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
+	"time"
 
+	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 )
 
 type SystemFunction struct {
-	Path  string `toml:"path"`
-	Layer layers.Layer
+	systemFunctionLayer layers.DependencyLayer
 }
 
-func NewSystemFunction(l layers.Layer, path string) SystemFunction {
+func NewSystemFunction(build build.Build) (SystemFunction, bool, error) {
+	deps, err := build.Buildpack.Dependencies()
+	if err != nil {
+		return SystemFunction{}, false, err
+	}
+
+	dep, err := deps.Best("system-function", "0.4.3", build.Stack)
+	if err != nil {
+		return SystemFunction{}, false, err
+	}
+
 	return SystemFunction{
-		Path:  path,
-		Layer: l,
-	}
+		systemFunctionLayer: build.Layers.DependencyLayer(dep),
+	}, true, nil
 }
 
-func (f SystemFunction) Contribute() error {
-	f.Layer.Touch()
+func (f SystemFunction) Contribute(wg *sync.WaitGroup) error {
+	defer wg.Done()
 
-	if err := f.Layer.WriteMetadata(f, layers.Launch); err != nil {
-		return err
-	}
+	defer func(startTime time.Time)() {
+		endTime := time.Now()
+		output := fmt.Sprintf("****** Total Execution Time System Function Contribute: %d (ms)", endTime.Sub(startTime)/time.Millisecond)
+		fmt.Println(output)
+	}(time.Now())
 
-	if err := os.MkdirAll(f.Layer.Root, 0755); err != nil {
-		return err
-	}
-
-	filenames := []string{"index.js", "package.json", "package-lock.json"}
-	for _, filename := range filenames {
-		sourceFilename := filepath.Join(f.Path, "system", filename)
-		file, err := ioutil.ReadFile(sourceFilename)
-		if err != nil {
-			fmt.Println("Couldn't read file", sourceFilename)
-			return err
+	if err := f.systemFunctionLayer.Contribute(func(artifact string, layer layers.DependencyLayer) error {
+		layer.Logger.Body("Expanding to %s", layer.Root)
+		if e := helper.ExtractTarGz(artifact, layer.Root, 1); e != nil {
+			return e
+		}
+		layer.Logger.Body("npm-installing the system function")
+		cmd := exec.Command("npm", "install", "--production")
+		cmd.Stdout = os.Stderr
+		cmd.Stderr = os.Stderr
+		cmd.Dir = filepath.Join(layer.Root, "src")
+		if e := cmd.Run(); e != nil {
+			return e
 		}
 
-		destFilename := filepath.Join(f.Layer.Root, filename)
-		err = ioutil.WriteFile(destFilename, file, 0755)
-		if err != nil {
-			fmt.Println("Couldn't write file", destFilename)
-			return err
-		}
-	}
-
-	systemFunc := filepath.Join(f.Layer.Root, "index.js")
-	if err := f.Layer.OverrideLaunchEnv("FUNCTION_URI", systemFunc); err != nil {
+		return nil
+	}, layers.Launch); err != nil {
 		return err
 	}
 
-	cmd := exec.Command("npm", "install", "--production")
-	cmd.Stdout = os.Stderr
-	cmd.Stderr = os.Stderr
-	cmd.Dir = f.Layer.Root
-	if e := cmd.Run(); e != nil {
-		return e
+	systemFuncPath := filepath.Join(f.systemFunctionLayer.Root, "src", "index.js")
+	fmt.Println(fmt.Sprintf("FUNCTION_URI = %s", systemFuncPath))
+	if err := f.systemFunctionLayer.OverrideLaunchEnv("FUNCTION_URI", systemFuncPath); err != nil {
+		return err
 	}
 
 	return nil
