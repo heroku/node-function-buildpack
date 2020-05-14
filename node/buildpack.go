@@ -19,9 +19,6 @@ package node
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
@@ -72,19 +69,6 @@ func (*NodeBuildpack) Build(b build.Build) error {
 		return fmt.Errorf("buildpack passed detection but did not know how to actually build")
 	}
 	if err := invoker.Contribute(); err != nil {
-		return err
-	}
-
-	systemLayer := b.Layers.Layer("system")
-	bpBinDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		return err
-	}
-
-	bpDir := filepath.Join(bpBinDir, "../")
-	sysFunc := NewSystemFunction(systemLayer, bpDir)
-
-	if err := sysFunc.Contribute(); err != nil {
 		return err
 	}
 
